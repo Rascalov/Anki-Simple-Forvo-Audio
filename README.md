@@ -37,7 +37,7 @@ You can also also preview the audios before you choose one.
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 ## Auto Fetch (NOT RECOMMENDED (yet))
-My deformed son. <br>
+My deformed son. You can find it in `tools>Add Forvo TTS to deck` <br>
 It takes in a deck and, depending on the fields you select, downloads audios from either forvo or my own CDN that uses forvo when needed.<br>
 
 
