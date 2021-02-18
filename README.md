@@ -1,5 +1,25 @@
+# Installation
+Either clone this repository to your Anki-Addons folder or download the zip in [Releases](https://github.com/Rascalov/Anki-Simple-Forvo-Audio/releases), unzip it, and put in your addon folder
+
+After the addon is loaded:
+* Go to Anki>Tools>Add-ons <br>
+* Select the addon
+* Click on **Config**
+* set your `downloadPath` to the path anki uses to save media 
+
+On linux, mine looked like: <br>
+`/home/user/.local/share/Anki2/User 1/collection.media/`
+
+I read that on windows it looks like: <br> `C:\Users\Administrator\AppData\Roaming\Anki2\yourankiaccountname\collection.media`
+
+result:
+
+<img src="githubAssets/config.png" width =300 height=100>
+
+
 # Anki Simple Forvo Audio
-Main goal of this addon is to make forvo audio easy (and **free** ) to use.
+Main goal of this addon is to make forvo audio easy to apply to your anki cards (and doing so for **free** ).<br>
+No forvo account is needed.
 
 AwesomeTTS supports forvo, but only if you pay for an API key or subscribe to their patreon. <br> I wrote this to avoid monthly payments.
 
