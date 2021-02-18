@@ -1,7 +1,8 @@
 # Installation
 Either clone this repository to your Anki-Addons folder or download the zip in [Releases](https://github.com/Rascalov/Anki-Simple-Forvo-Audio/releases), unzip it, and put in your addon folder
 
-After the addon is loaded:
+You should be good to go. But should the audio not play, you might need to set the download path:
+
 * Go to Anki>Tools>Add-ons <br>
 * Select the addon
 * Click on **Config**
