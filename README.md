@@ -1,3 +1,5 @@
+![Fetch Gif SHould be here](/githubAssets/Select-and-Fetch.gif)
+
 # Installation
 Either clone this repository to your Anki-Addons folder or download the zip in [Releases](https://github.com/Rascalov/Anki-Simple-Forvo-Audio/releases), unzip it, and put in your addon folder
 
