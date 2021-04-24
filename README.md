@@ -13,11 +13,18 @@ You should be good to go. But should the audio not play, you might need to set t
 On linux, mine looked like: <br>
 `/home/user/.local/share/Anki2/User 1/collection.media/`
 
-I read that on windows it looks like: <br> `C:\Users\Administrator\AppData\Roaming\Anki2\yourankiaccountname\collection.media`
+On windows you need to use forward slashes or double backslashes for your path, otherwise the program will return an invalid configuration error message. Eg.
+<br>
+`C:\\Users\\Administrator\\AppData\\Roaming\\Anki2\\yourankiaccountname\\collection.media`
 
-result:
-
+**Result**: <br>
+**On Linux** <br>
 <img src="githubAssets/config.png" width =300 height=100>
+
+**On Windows**
+<br>
+<img src="https://user-images.githubusercontent.com/72221896/115940769-2abd9e00-a479-11eb-9460-0a7062343ce0.png" width =300 height=100>
+
 
 
 # Anki Simple Forvo Audio
