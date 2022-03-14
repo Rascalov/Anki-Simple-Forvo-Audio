@@ -1,8 +1,8 @@
 import urllib.request
 import urllib.parse
 import json
-from AnkiSimpleForvoAudio.AnkiAudioTools import AnkiAudioObject, AnkiAudioGlobals
-from AnkiSimpleForvoAudio.bs4Scraper import lookup_word
+from .AnkiAudioTools import AnkiAudioObject, AnkiAudioGlobals
+from .bs4Scraper import lookup_word
 from aqt import mw
 
 '''

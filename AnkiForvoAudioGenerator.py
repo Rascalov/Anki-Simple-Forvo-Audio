@@ -2,9 +2,9 @@ from aqt.qt import *
 import sys
 import time
 from aqt import mw
-from AnkiSimpleForvoAudio.AnkiAudioTools import *
-from AnkiSimpleForvoAudio.bs4Scraper import scrapeAnkiAudioObject
-from AnkiSimpleForvoAudio.ovrofCDN import *
+from .AnkiAudioTools import *
+from .bs4Scraper import scrapeAnkiAudioObject
+from .ovrofCDN import *
 import random
 import unicodedata
 

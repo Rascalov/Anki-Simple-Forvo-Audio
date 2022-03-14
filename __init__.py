@@ -1,7 +1,7 @@
 from aqt import mw
 from aqt.qt import *
-from AnkiSimpleForvoAudio.AutoForvoTts import AutoForvoTts
-from AnkiSimpleForvoAudio.ForvoTts import ForvoTts
+from .AutoForvoTts import AutoForvoTts
+from .ForvoTts import ForvoTts
 from aqt import gui_hooks
 
 def openForvoAudioGenerator():

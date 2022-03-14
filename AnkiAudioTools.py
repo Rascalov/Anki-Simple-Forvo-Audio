@@ -2,6 +2,7 @@ import urllib.request
 import urllib.parse
 from enum import Enum
 from bs4 import BeautifulSoup 
+from aqt import mw
 import random
 
 languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_af', 'Aghul_agx', 'Akan_ak', 'Albanian_sq', 'Algerian Arabic_arq', 'Algonquin_alq',
@@ -49,8 +50,9 @@ class AnkiAudioObject:
     def getFilename(self): # used to be useful to access the vote amount
         return self.word + "-" + str(self.id) + "-" + self.votes + "." + self.link.split(".")[-1]
     def getBucketFilename(self): 
-        #filename without the votes.
-        return self.word + "-" + str(self.id) + "." + self.link.split(".")[-1]
+        #filename without the votes now used everywhere so a rename is needed. file extension now depends on config.
+        fileExtension = (mw.addonManager.getConfig(__name__)["audioFileExtension"] or self.link.split(".")[-1])
+        return self.word + "-" + str(self.id) + "." + fileExtension
     def getVotes(self):
         return int(self.votes.replace("votes", ""))
 

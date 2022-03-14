@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import base64
 import urllib.request
 import urllib.parse
-from AnkiSimpleForvoAudio.AnkiAudioTools import AnkiAudioObject, AnkiAudioGlobals
+from .AnkiAudioTools import AnkiAudioObject, AnkiAudioGlobals
 import string
 import unicodedata
 import sys

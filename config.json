@@ -1,5 +1,6 @@
 {
     "downloadPath":"",
     "ignorePunctuation": "True",
-    "MaxForvoDownloads": 100
+    "MaxForvoDownloads": 100,
+    "audioFileExtension": "mp3" 
 }

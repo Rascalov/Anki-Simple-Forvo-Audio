@@ -5,8 +5,8 @@ from PyQt5.Qt import *  # type: ignore
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from aqt import mw
-from AnkiSimpleForvoAudio.AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
-from AnkiSimpleForvoAudio.bs4Scraper import lookup_word
+from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
+from .bs4Scraper import lookup_word
 import os
 import glob
 
