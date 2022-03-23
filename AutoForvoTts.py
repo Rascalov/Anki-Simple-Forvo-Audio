@@ -4,8 +4,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from aqt import mw
 from aqt.utils import showInfo
-from AnkiSimpleForvoAudio.AnkiForvoAudioGenerator import AnkiForvoAudioGenerator
-from AnkiSimpleForvoAudio.AnkiAudioTools import AnkiAudioTarget, AudioClearingOptions, AcquisitionType, AnkiAudioGlobals
+from .AnkiForvoAudioGenerator import AnkiForvoAudioGenerator
+from .AnkiAudioTools import AnkiAudioTarget, AudioClearingOptions, AcquisitionType, AnkiAudioGlobals
 
 # TODO: To anyone even remotely familiar with QT, this probably looks horrendous. Revamp encouraged. 
 

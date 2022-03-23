@@ -5,33 +5,28 @@ from PyQt5.Qt import *  # type: ignore
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from aqt import mw
-from AnkiSimpleForvoAudio.AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
-from AnkiSimpleForvoAudio.bs4Scraper import lookup_word
+from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
+from .bs4Scraper import lookup_word
 import os
 import glob
+from threading import *
 
 # TODO: To anyone even remotely familiar with QT, this probably looks horrendous. Revamp encouraged. 
 
 class ForvoTts(QDialog):
     finalResult = None # to be a
-    def __init__(self, mw, targetNote, parent, focusedField):
+    def __init__(self, mw, targetNote, parent, focusedField, selectedText):
         QDialog.__init__(self, parent or mw)
         #super(ForvoTts, self).__init__(parent)
-        selectionText = QApplication.clipboard().text(1)
         self.textBox = QLineEdit(self)
         self.textBox.setGeometry(QRect(200, 50, 150, 30))
         self.textBox.setMinimumWidth(170)
         self.textBox.setPlaceholderText("Search...")
         self.config = mw.addonManager.getConfig(__name__)
         self.focusedField = focusedField
-        for fieldName in targetNote.keys():
-            if(selectionText in targetNote[fieldName]):
-                self.textBox.setText(selectionText)
-                break
-
+        self.textBox.setText(selectedText)
         self.targetNote = targetNote        
         self.setupUi(self)
-        
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("TTSDialog")
