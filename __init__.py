@@ -28,6 +28,10 @@ def forvoTts(editorWindow):
         result = widget.finalResult
         editor.web.setFocus()
         editor.web.eval("focusField(%d);" % int(widget.destinationFieldComboBox.currentIndex())) 
-        editor.web.eval("wrap('', '[sound:" + result.getBucketFilename() + "]');") 
+        print(result.getBucketFilename())
+        #editor.web.eval("wrap('', '[sound:" + result.getBucketFilename() + "]');") 
+        # Why am I so terrible at finding obvious functions, that whole web.eval stuff took a while to figure out
+        editor.doPaste("[sound:" + result.getBucketFilename() + "]",internal=False, extended=True)
+        
 
 gui_hooks.editor_will_show_context_menu.append(addForvoTtsOption)

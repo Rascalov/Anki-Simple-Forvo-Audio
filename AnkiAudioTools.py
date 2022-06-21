@@ -85,7 +85,10 @@ def download_Audio(word, link, path, filename, tempdownload = False):
     if(tempdownload):
         filename = AnkiAudioGlobals.TEMP_FILE_PREFIX + filename
     try:
-        urllib.request.urlretrieve(link, path + filename)
+
+        print("Downloading: link: " + link + " path: " + path+" filename: " + filename)
+        resultt = urllib.request.urlretrieve(link, path + filename)
+        print(resultt)
     except Exception as e:
         print("Failed to download " + filename)
         print(e)
