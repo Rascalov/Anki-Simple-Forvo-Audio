@@ -148,13 +148,17 @@ def lookup_word(word, languageCode, automatic=False):
     if(audioListUl == None or len(audioListUl.findChildren(recursive=False)) == 0):
         print("FORVO: Word not found (Language Container exists, but audio not found)")
         return audioList
-    audioListLis = audioListUl.find_all("li",attrs={'class': None} )
+    if(languageCode == "en"):
+        audioListLis = forvoPage.select("li[class*=en_]")
+    else:
+        audioListLis = audioListUl.find_all("li",attrs={'class': None} )
     #forvo_audio bs4-ify
     if(automatic):
         audioList.append(get_forvo_audio_object(audioListLis[0], word))
     else:
         for li in audioListLis:
             audioList.append(get_forvo_audio_object(li, word))
+            #audioList.append(li)
     return audioList
 
 
@@ -168,3 +172,6 @@ def scrapeAnkiAudioObject(word, languageCode, automatic=False):
         return lookup_words(word.split('_'), languageCode)
     AnkiAudioGlobals.forvoRequests += 1
     return wordlist
+
+# To debug, Comment out the AnkiAudioObject imports and make the audiolist append the element, not the object. (line 160-161) 
+#print(lookup_word("слова", "ru"))
