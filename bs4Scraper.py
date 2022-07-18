@@ -113,7 +113,7 @@ def get_audio_link(onclickFunction):
 
 def get_forvo_audio_object(audioLi, word):
     #selector = CSSSelector("span")
-    audioTag = audioLi.select_one("span")
+    audioTag = audioLi.select_one("div")
     audioid = audioTag["id"].split("_")[-1]
     audioLink =  get_audio_link(audioTag["onclick"])
     return AnkiAudioObject(word, audioid, audioLink)
@@ -144,14 +144,14 @@ def lookup_word(word, languageCode, automatic=False):
         print("FORVO: Word not found (Language Container does not exist!)")
         return audioList # no results for that language-code
     speachSections = forvoPage.select_one("div#language-container-" + languageCode)
-    audioListUl = speachSections.select_one("ul.show-all-pronunciations")
+    audioListUl = speachSections.select_one("ul#pronunciations-list-" + languageCode)
     if(audioListUl == None or len(audioListUl.findChildren(recursive=False)) == 0):
         print("FORVO: Word not found (Language Container exists, but audio not found)")
         return audioList
     if(languageCode == "en"):
         audioListLis = forvoPage.select("li[class*=en_]")
     else:
-        audioListLis = audioListUl.find_all("li",attrs={'class': None} )
+        audioListLis = audioListUl.find_all("li",attrs={'class': "pronunciation"} )
     #forvo_audio bs4-ify
     if(automatic):
         audioList.append(get_forvo_audio_object(audioListLis[0], word))
