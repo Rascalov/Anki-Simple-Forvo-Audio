@@ -145,11 +145,13 @@ def lookup_word(word, languageCode, automatic=False):
         return audioList # no results for that language-code
     speachSections = forvoPage.select_one("div#language-container-" + languageCode)
     audioListUl = speachSections.select_one("ul#pronunciations-list-" + languageCode)
+    
     if(audioListUl == None or len(audioListUl.findChildren(recursive=False)) == 0):
-        print("FORVO: Word not found (Language Container exists, but audio not found)")
-        return audioList
-    if(languageCode == "en"):
-        audioListLis = forvoPage.select("li[class*=en_]")
+        if(languageCode == "en"):
+            audioListLis = speachSections.select("li.pronunciation")
+        else:
+            print("FORVO: Word not found (Language Container exists, but audio not found)")
+            return audioList
     else:
         audioListLis = audioListUl.find_all("li",attrs={'class': "pronunciation"} )
     #forvo_audio bs4-ify
