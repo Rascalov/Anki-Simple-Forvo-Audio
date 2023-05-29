@@ -13,7 +13,7 @@ def openForvoAudioGenerator():
 
 action = QAction("Add Forvo TTS to deck", mw)
 action.triggered.connect(openForvoAudioGenerator)
-#mw.form.menuTools.addAction(action)
+mw.form.menuTools.addAction(action)
 
 def addForvoTtsOption(editerWindow, qmenu):
     qmenu.addAction("Add Forvo Audio", lambda: forvoTts(editerWindow))
