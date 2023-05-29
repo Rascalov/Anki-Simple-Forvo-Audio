@@ -200,6 +200,8 @@ class ForvoTts(QDialog):
 
     def getDefinteConfigPath(self):
         configPath = self.config["downloadPath"]
+        if(configPath == ""):
+            return mw.col.media.dir()
         if(configPath[-1] != "\\" or configPath[-1] !="/"):
             os_platform = platform.system()
             configPath = configPath + "\\" if os_platform == "Windows" else configPath + "/"
