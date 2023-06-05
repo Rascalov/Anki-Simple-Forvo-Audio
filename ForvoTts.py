@@ -11,6 +11,8 @@ import os
 import glob
 from threading import *
 import platform
+import re
+
 
 # TODO: To anyone even remotely familiar with QT, this probably looks horrendous. Revamp encouraged. 
 
@@ -32,7 +34,11 @@ class ForvoTts(QDialog):
     def setupUi(self, Dialog):
         Dialog.setObjectName("TTSDialog")
         Dialog.resize(320, 250) #w h 
-        Dialog.setWindowTitle("Forvo TTS")
+        # Get current deck's description
+        deck = mw.col.decks.current()
+        description = deck["desc"]
+        
+        Dialog.setWindowTitle("Forvo TTS for")
         # finish button
         self.pushButtonStart = QPushButton(Dialog)
         self.pushButtonStart.setGeometry(QRect(195, 350, 150, 28))
@@ -65,6 +71,13 @@ class ForvoTts(QDialog):
         except:
             if(isinstance(self.focusedField, int)):
                 self.destinationFieldComboBox.setCurrentIndex(self.focusedField)
+            
+        if(eval(self.config["Remember language on a per deck basis"])):
+            # Lazy lookup for string inside brackers
+            pattern = r"\[(.*?)\]"
+            matches = re.findall(pattern, description)  # Find all matches
+            if matches:
+                self.languageSelectBox.setCurrentIndex(self.languageSelectBox.findText(matches[0]))
         #vbox 
         #self.mainContainerLayout = QVBoxLayout(Dialog)
         #self.mainContainerLayout.setGeometry(QRect(0, 20, 320, 35))
@@ -177,6 +190,14 @@ class ForvoTts(QDialog):
             os.rename(fullpath, self.getDefinteConfigPath() + ankiAudioObject.getBucketFilename())
         else: # else download it without temp prefix
             download_Audio(ankiAudioObject.word, ankiAudioObject.link, self.getDefinteConfigPath(), ankiAudioObject.getBucketFilename())
+        
+        if(eval(self.config["Remember language on a per deck basis"])):
+            # Get current deck's description and adjust it if language
+            deck = mw.col.decks.current()
+            description = deck["desc"]
+            if(not description.startswith("[" + self.languageSelectBox.currentText() +"]")):
+                deck["desc"]  = "[" + self.languageSelectBox.currentText() +"]" + deck["desc"]
+            mw.col.decks.save(deck)                
         self.config["LastSelectedLanguage"] = self.languageSelectBox.currentText()
         self.config["LastSelectedField"] = self.destinationFieldComboBox.currentText()
         mw.addonManager.writeConfig(__name__, self.config)
