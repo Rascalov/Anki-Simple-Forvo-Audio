@@ -2,5 +2,6 @@
     "downloadPath":"",
     "ignorePunctuation": "True",
     "MaxForvoDownloads": 100,
-    "audioFileExtension": "mp3" 
+    "audioFileExtension": "mp3",
+    "Remember language on a per deck basis":"False"
 }
