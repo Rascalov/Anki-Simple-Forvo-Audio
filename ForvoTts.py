@@ -34,9 +34,7 @@ class ForvoTts(QDialog):
     def setupUi(self, Dialog):
         Dialog.setObjectName("TTSDialog")
         Dialog.resize(320, 250) #w h 
-        # Get current deck's description
-        deck = mw.col.decks.current()
-        description = deck["desc"]
+
         
         Dialog.setWindowTitle("Forvo TTS for")
         # finish button
@@ -73,6 +71,12 @@ class ForvoTts(QDialog):
                 self.destinationFieldComboBox.setCurrentIndex(self.focusedField)
             
         if(eval(self.config["Remember language on a per deck basis"])):
+            try:
+                deck = mw.col.decks.get(self.targetNote.cards()[0].did)
+            except:
+                deck = mw.col.decks.current()
+            # Get current deck's description
+            description = deck["desc"]
             # Lazy lookup for string inside brackers
             pattern = r"\[(.*?)\]"
             matches = re.findall(pattern, description)  # Find all matches
@@ -193,11 +197,14 @@ class ForvoTts(QDialog):
         
         if(eval(self.config["Remember language on a per deck basis"])):
             # Get current deck's description and adjust it if language
-            deck = mw.col.decks.current()
+            try:
+                deck = mw.col.decks.get(self.targetNote.cards()[0].did)
+            except:
+                deck = mw.col.decks.current()
             description = deck["desc"]
             if(not description.startswith("[" + self.languageSelectBox.currentText() +"]")):
                 deck["desc"]  = "[" + self.languageSelectBox.currentText() +"]" + deck["desc"]
-            mw.col.decks.save(deck)                
+                mw.col.decks.save(deck)                
         self.config["LastSelectedLanguage"] = self.languageSelectBox.currentText()
         self.config["LastSelectedField"] = self.destinationFieldComboBox.currentText()
         mw.addonManager.writeConfig(__name__, self.config)
