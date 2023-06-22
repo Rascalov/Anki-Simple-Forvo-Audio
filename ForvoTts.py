@@ -191,8 +191,10 @@ class ForvoTts(QDialog):
         #select the forvo audio to add. 
         fullpath = self.getDefinteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + ankiAudioObject.getBucketFilename()
         if(os.path.isfile(fullpath)): # if it was a temp file, rename it
+            print("Renaming temporary file ", ankiAudioObject.getBucketFilename() , "to permanent file")
             os.rename(fullpath, self.getDefinteConfigPath() + ankiAudioObject.getBucketFilename())
         else: # else download it without temp prefix
+            print("Downloading ", ankiAudioObject.word, " to ", self.getDefinteConfigPath() + ankiAudioObject.getBucketFilename())
             download_Audio(ankiAudioObject.word, ankiAudioObject.link, self.getDefinteConfigPath(), ankiAudioObject.getBucketFilename())
         
         if(eval(self.config["Remember language on a per deck basis"])):
@@ -224,13 +226,14 @@ class ForvoTts(QDialog):
 
     def deleteTempFiles(self):
         for tempFile in glob.glob(self.getDefinteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + '*'):
+            print("Deleting: ", tempFile)
             os.remove(tempFile)
 
     def getDefinteConfigPath(self):
+        os_platform = platform.system()
         configPath = self.config["downloadPath"]
         if(configPath == ""):
-            return mw.col.media.dir()
+            return mw.col.media.dir() + "\\" if os_platform == "Windows" else mw.col.media.dir() + "/"
         if(configPath[-1] != "\\" or configPath[-1] !="/"):
-            os_platform = platform.system()
             configPath = configPath + "\\" if os_platform == "Windows" else configPath + "/"
         return configPath
