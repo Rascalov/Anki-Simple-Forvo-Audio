@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from aqt import mw
 from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
-from .bs4Scraper import lookup_word
+from .bs4Scraper import lookup_word, lookup_word_lingua_libre
 import os
 import glob
 from threading import *
@@ -145,7 +145,11 @@ class ForvoTts(QDialog):
     def start_lookup(self, context):
         self.currentSearchResults = {}
         self.deleteItemsOfLayout(self.verticalLayout)
-        results = lookup_word(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1])
+        results = []
+        if(eval(self.config["Use sources besides Forvo"])):
+            results.extend(lookup_word_lingua_libre(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
+
+        results.extend(lookup_word(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
         if(len(results) == 0):
             self.lblScrollFieldResults.setText("No results found...")
         else:

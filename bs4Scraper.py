@@ -8,6 +8,7 @@ import unicodedata
 import sys
 import traceback
 import random
+import re
 """
 This scraper is used when my own cdn does not have the word(s) we seek.
 
@@ -163,6 +164,22 @@ def lookup_word(word, languageCode, automatic=False):
             #audioList.append(li)
     return audioList
 
+def lookup_word_lingua_libre(word, languageCode):
+    audioList = []
+    wordEncoded = urllib.parse.quote(word)
+    page = get_forvo_page("https://lingualibre.org/index.php?search=" + wordEncoded)
+    links = page.select("a[href^='/wiki/Q']")
+    pattern = word +" | audio record - " + languageCode
+    for link in links:
+        clean_title = link["title"].replace("\u200E", "").lower()
+        if clean_title.startswith(pattern):
+            try:
+                linkPage = get_forvo_page("https://lingualibre.org" + link['href'])
+                wordID = link['href'][link['href'].find("Q"):]
+                audioList.append(AnkiAudioObject(word, wordID , linkPage.select_one("source[type^='audio/ogg']")['src']))
+            except Exception as e:
+                print(str(e))
+    return audioList
 
 def scrapeAnkiAudioObject(word, languageCode, automatic=False):
     word = word.replace(' ', '_')
@@ -177,3 +194,5 @@ def scrapeAnkiAudioObject(word, languageCode, automatic=False):
 
 # To debug, Comment out the AnkiAudioObject imports and make the audiolist append the element, not the object. (line 160-161) 
 #print(lookup_word("слова", "ru"))
+
+#print(lookup_word_lingua_libre("пять", "ru"))
