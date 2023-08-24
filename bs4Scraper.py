@@ -146,7 +146,9 @@ def lookup_word(word, languageCode, automatic=False):
         return audioList # no results for that language-code
     speachSections = forvoPage.select_one("div#language-container-" + languageCode)
     audioListUl = speachSections.select_one("ul#pronunciations-list-" + languageCode)
-    
+    # temp fix for accent pages
+    if(audioListUl == None):
+        audioListUl = speachSections.select_one("ul#pronunciations-list-" + languageCode + "_" + languageCode)
     if(audioListUl == None or len(audioListUl.findChildren(recursive=False)) == 0):
         if(languageCode == "en"):
             audioListLis = speachSections.select("li.pronunciation")
