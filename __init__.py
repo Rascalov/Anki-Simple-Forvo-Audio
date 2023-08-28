@@ -6,7 +6,7 @@ from aqt import gui_hooks
 
 
 def openForvoAudioGenerator():
-    cardCount = mw.col.cardCount()
+    cardCount = mw.col.card_count()
     config = mw.addonManager.getConfig(__name__)
     mw.myWidget = widget = AutoForvoTts(mw)
     widget.show()
@@ -24,7 +24,7 @@ def forvoTts(editorWindow):
     results = []
     note = editor.note
     widget = ForvoTts(mw, note, editor.parentWindow, editor.currentField, editorWindow.selectedText())
-    if(widget.exec_()):
+    if(widget.exec()):
         result = widget.finalResult
         editor.web.setFocus()
         editor.web.eval("focusField(%d);" % int(widget.destinationFieldComboBox.currentIndex())) 
