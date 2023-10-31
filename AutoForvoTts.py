@@ -1,7 +1,4 @@
 from aqt.qt import *
-#from PyQt6.Qt import *  # type: ignore
-#from PyQt6.QtCore import *
-#from PyQt6.QtWidgets import *
 from aqt import mw
 from aqt.utils import showInfo
 from .AnkiForvoAudioGenerator import AnkiForvoAudioGenerator
