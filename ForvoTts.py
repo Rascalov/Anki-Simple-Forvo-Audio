@@ -1,9 +1,6 @@
 from aqt.qt import *
 import aqt.sound
 #from aqt.QtCore import QFile, QObject
-from PyQt5.Qt import *  # type: ignore
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 from aqt import mw
 from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
 from .bs4Scraper import lookup_word, lookup_word_lingua_libre
