@@ -31,7 +31,7 @@ class AnkiForvoAudioGenerator(QThread):
             if(self.isInterruptionRequested()):
                 self.countChanged.emit(0)
                 return
-            card = mw.col.getCard(self.cards[count])
+            card = mw.col.get_card(self.cards[count])
             # Check if it has all the fields specified in the targets, if it does: loop. If it doesn't move on
             if(self.cardContainsTargets(card)): # pretty slow, maybe just do a try except
                 #print("card nr." + str(count) + " contains the targets" )

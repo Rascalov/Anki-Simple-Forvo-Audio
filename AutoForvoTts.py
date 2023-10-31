@@ -1,7 +1,4 @@
 from aqt.qt import *
-from PyQt5.Qt import *  # type: ignore
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 from aqt import mw
 from aqt.utils import showInfo
 from .AnkiForvoAudioGenerator import AnkiForvoAudioGenerator
@@ -60,7 +57,7 @@ class AutoForvoTts(QDialog):
         languageSelectBox.setStyleSheet("combobox-popup: 0;")
         # Field Select ComboBox
         fieldSelectBox = QComboBox(self.scrollAreaWidgetContents)
-        fieldSelectBox.setFocusPolicy(Qt.StrongFocus)
+        fieldSelectBox.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         fieldSelectBox.addItems(self.fieldNames)
         fieldSelectBox.setCurrentIndex(self.fieldNames.index(targetFieldName))
         fieldSelectBox.setStyleSheet("combobox-popup: 0;")
@@ -76,11 +73,11 @@ class AutoForvoTts(QDialog):
         try:
             self.pushButtonStart.setDisabled = True
             self.deleteItemsOfLayout(self.verticalLayout)
-            deck = mw.col.decks.byName(deckName)
+            deck = mw.col.decks.by_name(deckName)
             # get cards from deck. use double quotes in case of spaces
             self.cards = mw.col.find_cards("\"deck:" + str(deckName) + "\"")
             # take last card's fields (keys)
-            card = mw.col.getCard(self.cards[-1])
+            card = mw.col.get_card(self.cards[-1])
             self.fieldNames = card.note().keys()
             for field in self.fieldNames:
                 #add to the scroll area: Checkbox, languageComboBox, FieldComboBox
@@ -108,7 +105,7 @@ class AutoForvoTts(QDialog):
         self.labelProgrssbarDialog = QLabel(Dialog)
         self.labelProgrssbarDialog.setGeometry(QRect(0, 420, 505, 20))
         self.labelProgrssbarDialog.setObjectName("labelProgrssbarDialog")
-        self.labelProgrssbarDialog.setAlignment(Qt.AlignCenter)
+        self.labelProgrssbarDialog.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # add languages self.comboBoxDeckSelection.addItem("")
 
@@ -169,18 +166,18 @@ class AutoForvoTts(QDialog):
         self.scrollAreaFields = QScrollArea(Dialog)
         self.scrollAreaFields.setEnabled(True)
         self.scrollAreaFields.setGeometry(QRect(20, 120, 441, 121))
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.scrollAreaFields.sizePolicy().hasHeightForWidth())
         self.scrollAreaFields.setSizePolicy(sizePolicy)
-        self.scrollAreaFields.setFrameShape(QFrame.Box)
-        self.scrollAreaFields.setFrameShadow(QFrame.Plain)
+        self.scrollAreaFields.setFrameShape(QFrame.Shape.Box)
+        self.scrollAreaFields.setFrameShadow(QFrame.Shadow.Plain)
         self.scrollAreaFields.setLineWidth(2)
-        self.scrollAreaFields.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scrollAreaFields.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scrollAreaFields.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scrollAreaFields.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scrollAreaFields.setWidgetResizable(True)
-        self.scrollAreaFields.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.scrollAreaFields.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
         self.scrollAreaFields.setObjectName("scrollAreaFields")
         self.createScrollAreaWidgetContents()
         self.setListVBox()
@@ -216,14 +213,20 @@ class AutoForvoTts(QDialog):
         self.comboBoxDeckSelection = QComboBox(Dialog)
         self.comboBoxDeckSelection.setGeometry(QRect(140, 30, 82, 24))
         self.comboBoxDeckSelection.setMaximumWidth(200)
-        self.comboBoxDeckSelection.setInsertPolicy(QComboBox.InsertAtBottom)
-        self.comboBoxDeckSelection.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.comboBoxDeckSelection.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
+        self.comboBoxDeckSelection.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self.comboBoxDeckSelection.setMinimumContentsLength(0)
         self.comboBoxDeckSelection.setObjectName("comboBoxDeckSelection")
         self.comboBoxDeckSelection.currentTextChanged.connect(self.deckSeletionChanged)
-
-        self.comboBoxDeckSelection.addItems(mw.col.decks.allNames())
-        self.comboBoxDeckSelection.view().setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        print(mw.col.decks.all_names_and_ids())
+        decklist = mw.col.decks.all_names_and_ids()
+        names = []
+        for deck in decklist:
+            names.append(deck.name)
+        # print(names)
+        #[decklist.name for item in decklist]
+        self.comboBoxDeckSelection.addItems(names)
+        self.comboBoxDeckSelection.view().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
         self.retranslateUi(Dialog)
         QMetaObject.connectSlotsByName(Dialog)
@@ -242,7 +245,7 @@ class AutoForvoTts(QDialog):
 
     def setListVBox(self):
         self.verticalLayout = QVBoxLayout(self.scrollAreaWidgetContents)
-        self.verticalLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.verticalLayout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
         self.verticalLayout.setContentsMargins(0, 10, 0, 0)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -260,7 +263,7 @@ class AutoForvoTts(QDialog):
     def createScrollAreaWidgetContents(self):
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 328, 121))
-        sizePolicy = QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
