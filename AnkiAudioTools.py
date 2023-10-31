@@ -4,6 +4,8 @@ from enum import Enum
 from bs4 import BeautifulSoup 
 from aqt import mw
 import random
+import os
+import pathlib
 
 languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_af', 'Aghul_agx', 'Akan_ak', 'Albanian_sq', 'Algerian Arabic_arq', 'Algonquin_alq',
              'Amharic_am', 'Ancient Greek_grc', 'Arabic_ar', 'Aragonese_an', 'Arapaho_arp', 'Arbëresh_aae', 'Armenian_hy', 'Aromanian_rup', 'Assamese_as', 'Assyrian Neo-Aramaic_aii',
@@ -85,10 +87,16 @@ def download_Audio(word, link, path, filename, tempdownload = False):
     if(tempdownload):
         filename = AnkiAudioGlobals.TEMP_FILE_PREFIX + filename
     try:
-
+        temp_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "temp")
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        
         print("Downloading: link: " + link + " path: " + path+" filename: " + filename)
-        resultt = urllib.request.urlretrieve(link, path + filename)
-        print(resultt)
+        #result = urllib.request.urlretrieve(link, path + filename)
+        result = urllib.request.urlretrieve(link,  os.path.join(temp_dir, filename))
+        audio = mw.col.media.add_file(os.path.join(temp_dir, filename))        
+        print(audio)
+        return audio
     except Exception as e:
         print("Failed to download " + filename)
         print(e)

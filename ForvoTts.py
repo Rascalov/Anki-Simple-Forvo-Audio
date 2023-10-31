@@ -185,8 +185,10 @@ class ForvoTts(QDialog):
             aqt.sound.play(fullpath)
         else:
             print(fullpath + " is not a file,downaloding...")
-            download_Audio(audioObject.word, audioObject.link, self.getDefinteConfigPath(), audioObject.getBucketFilename(), True)
-            aqt.sound.play(fullpath)
+            
+            media=download_Audio(audioObject.word, audioObject.link, self.getDefinteConfigPath(), audioObject.getBucketFilename(), True)
+            #aqt.sound.play(fullpath)
+            aqt.sound.play(media)
 
     def insertIntoCard(self, ankiAudioObject):
         #select the forvo audio to add. 
