@@ -3,7 +3,7 @@ import aqt.sound
 #from aqt.QtCore import QFile, QObject
 from aqt import mw
 from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
-from .bs4Scraper import lookup_word, lookup_word_lingua_libre
+from .bs4Scraper import *
 import os
 import glob
 from threading import *
@@ -15,6 +15,7 @@ import re
 
 class ForvoTts(QDialog):
     finalResult = None # to be a
+    openrussian_session = ""
     def __init__(self, mw, targetNote, parent, focusedField, selectedText):
         QDialog.__init__(self, parent or mw)
         #super(ForvoTts, self).__init__(parent)
@@ -138,7 +139,6 @@ class ForvoTts(QDialog):
         self.scrollAreaWidgetContents.setSizeIncrement(QSize(0, 0))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
 
-
     def start_lookup(self, context):
         self.currentSearchResults = {}
         self.deleteItemsOfLayout(self.verticalLayout)
@@ -147,7 +147,11 @@ class ForvoTts(QDialog):
             results.extend(lookup_word_lingua_libre(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
 
         results.extend(lookup_word(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
-        if(len(results) == 0):
+        if(len(results) == 0 and self.languageSelectBox.currentText() == "Russian_ru"):
+            # Additional yandex translation. 
+            results.extend(scrape_yandex_tts(self.textBox.text()))
+            self.lblScrollFieldResults.setText("OpenRussian:")
+        elif(len(results) == 0):
             self.lblScrollFieldResults.setText("No results found...")
         else:
             self.lblScrollFieldResults.setText("Results:")

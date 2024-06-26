@@ -9,6 +9,8 @@ import sys
 import traceback
 import random
 import re
+import requests
+
 """
 This scraper is used when my own cdn does not have the word(s) we seek.
 
@@ -193,6 +195,27 @@ def scrapeAnkiAudioObject(word, languageCode, automatic=False):
         return lookup_words(word.split('_'), languageCode)
     AnkiAudioGlobals.forvoRequests += 1
     return wordlist
+
+def scrape_yandex_tts(word):
+    # Russian only (from en.openrussian.org)
+    audioList = []
+    url = f"https://api.openrussian.org/read/ru/{word}"
+    response = requests.get(url, allow_redirects=False)
+    headers = response.headers
+    print(response.status_code)
+    for header, value in response.headers.items():
+        print(f"{header}: {value}")
+    location = response.headers.get("Location")
+    print(location)
+    wordID = location.split('/')[-1].split('.mp3')[0]
+    audioList.append(AnkiAudioObject(word, wordID , location))
+    return audioList
+
+# session = login_to_openrussian()
+# print(session)
+# audio = scrape_yandex_tts("Привет из моего члена", session)[0]
+
+
 
 # To debug, Comment out the AnkiAudioObject imports and make the audiolist append the element, not the object. (line 160-161) 
 #print(lookup_word("слова", "ru"))
