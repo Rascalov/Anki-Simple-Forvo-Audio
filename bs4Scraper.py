@@ -148,9 +148,12 @@ def lookup_word(word, languageCode, automatic=False):
     for pronounciation in pronounciations:
         pronounciation.decompose()
 
-    div_audios = speachSection.select("div[id^='play_']")        
-    for div_audio in div_audios:
-        audioList.append(get_forvo_audio_object(div_audio, word))
+    div_audios = speachSection.select("div[id^='play_']")
+    if(automatic):
+        audioList.append(get_forvo_audio_object(div_audios[0], word))    
+    else:
+        for div_audio in div_audios:
+            audioList.append(get_forvo_audio_object(div_audio, word))
 
     if len(audioList) == 0:
         print("No words found in existing countainer")
