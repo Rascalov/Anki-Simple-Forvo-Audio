@@ -12,4 +12,4 @@ jobs:
       - name: Zip contents
         run: |
           zip -r ../ASFA.ankiaddon * -x LICENSE README.md githubAssets
-          uzip -l ../ASFA.ankiaddon
+          unzip -l ../ASFA.ankiaddon
