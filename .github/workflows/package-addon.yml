@@ -1,0 +1,17 @@
+name: package-addon
+run-name: Package the addon per release
+on: [push]
+jobs:
+  package-addon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 'workflow'
+
+      - name: Zip contents
+        run: |
+          pwd
+          ls
+          ls ..
+    
