@@ -114,9 +114,7 @@ def get_audio_link(onclickFunction):
     decodedLink = base64.b64decode(base64audio.encode('ascii')).decode('ascii')
     return "https://audio00.forvo.com/ogg/" + decodedLink
 
-def get_forvo_audio_object(audioLi, word):
-    #selector = CSSSelector("span")
-    audioTag = audioLi.select_one("div")
+def get_forvo_audio_object(audioTag, word):
     audioid = audioTag["id"].split("_")[-1]
     audioLink =  get_audio_link(audioTag["onclick"])
     return AnkiAudioObject(word, audioid, audioLink)
@@ -133,8 +131,6 @@ def lookup_words(words, languageCode):
 
 
 def lookup_word(word, languageCode, automatic=False):
-    # TODO: error catching. 
-    #forvo changed phrases to fit into the word category, which makes lookups easier, url replaces spaces with '_'
     audioList = []
     print("FORVO: Looking for " + word)
     wordEncoded = urllib.parse.quote(word)
@@ -142,31 +138,27 @@ def lookup_word(word, languageCode, automatic=False):
     if(forvoPage == None ):
         print("FORVO: Word not found (Page does not exist!)")
         return audioList # word not found
-    speachSections = forvoPage.select("div#language-container-" + languageCode)#[0]
-    if(len(speachSections) == 0):
+
+    speachSection = forvoPage.select_one("div#language-container-" + languageCode)
+    if not speachSection:
         print("FORVO: Word not found (Language Container does not exist!)")
         return audioList # no results for that language-code
-    speachSections = forvoPage.select_one("div#language-container-" + languageCode)
-    audioListUl = speachSections.select_one("ul#pronunciations-list-" + languageCode)
-    # temp fix for accent pages
-    if(audioListUl == None):
-        audioListUl = speachSections.select_one("ul#pronunciations-list-" + languageCode + "_" + languageCode)
-    if(audioListUl == None or len(audioListUl.findChildren(recursive=False)) == 0):
-        if(languageCode == "en"):
-            audioListLis = speachSections.select("li.pronunciation")
-        else:
-            print("FORVO: Word not found (Language Container exists, but audio not found)")
-            return audioList
-    else:
-        audioListLis = audioListUl.find_all("li",attrs={'class': "pronunciation"} )
-    #forvo_audio bs4-ify
+    
+    pronounciations = speachSection.select(f"ul#phrase-pronunciations-list-{languageCode}-" )
+    for pronounciation in pronounciations:
+        pronounciation.decompose()
+
+    div_audios = speachSection.select("div[id^='play_']")
     if(automatic):
-        audioList.append(get_forvo_audio_object(audioListLis[0], word))
+        audioList.append(get_forvo_audio_object(div_audios[0], word))    
     else:
-        for li in audioListLis:
-            audioList.append(get_forvo_audio_object(li, word))
-            #audioList.append(li)
+        for div_audio in div_audios:
+            audioList.append(get_forvo_audio_object(div_audio, word))
+
+    if len(audioList) == 0:
+        print("No words found in existing countainer")
     return audioList
+
 
 def lookup_word_lingua_libre(word, languageCode):
     audioList = []
@@ -210,10 +202,6 @@ def scrape_yandex_tts(word):
     wordID = location.split('/')[-1].split('.mp3')[0]
     audioList.append(AnkiAudioObject(word, wordID , location))
     return audioList
-
-# session = login_to_openrussian()
-# print(session)
-# audio = scrape_yandex_tts("Привет из моего члена", session)[0]
 
 
 
