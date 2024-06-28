@@ -147,7 +147,7 @@ class ForvoTts(QDialog):
             results.extend(lookup_word_lingua_libre(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
 
         results.extend(lookup_word(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
-        if(len(results) == 0 and self.languageSelectBox.currentText() == "Russian_ru"):
+        if(len(results) == 0 and self.languageSelectBox.currentText() == "Russian_ru" and eval(self.config["Use sources besides Forvo"])):
             # Additional yandex translation. 
             results.extend(scrape_yandex_tts(self.textBox.text()))
             self.lblScrollFieldResults.setText("OpenRussian:")
