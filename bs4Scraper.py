@@ -203,7 +203,16 @@ def scrape_yandex_tts(word):
     audioList.append(AnkiAudioObject(word, wordID , location))
     return audioList
 
+def forga_lookup(word, languageCode):
+    results = []
+    url = f"http://forga.charitycook.com:8001/audios?language={languageCode}&value={word}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+    for audio in data:
+        results.append(AnkiAudioObject(word, audio['id'], audio['link']))
 
+    return results
 
 # To debug, Comment out the AnkiAudioObject imports and make the audiolist append the element, not the object. (line 160-161) 
 #print(lookup_word("слова", "ru"))
