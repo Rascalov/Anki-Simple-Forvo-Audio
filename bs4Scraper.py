@@ -144,9 +144,7 @@ def lookup_word(word, languageCode, automatic=False):
         print("FORVO: Word not found (Language Container does not exist!)")
         return audioList # no results for that language-code
     
-    pronounciations = speachSection.select(f"ul#phrase-pronunciations-list-{languageCode}-" )
-    for pronounciation in pronounciations:
-        pronounciation.decompose()
+    speachSection = remove_noise(speachSection, languageCode)
 
     div_audios = speachSection.select("div[id^='play_']")
     if(automatic):
@@ -159,7 +157,15 @@ def lookup_word(word, languageCode, automatic=False):
         print("No words found in existing countainer")
     return audioList
 
+def remove_noise(html, languageCode):
+    # Remove audios that are part of the page but not the word itself
+    noise = html.select(f"ul#phrase-pronunciations-list-{languageCode}-" )
+    noise.extend(html.select(f"div.extra-info-container"))
+    for pronounciation in noise:
+        pronounciation.decompose()
 
+    return html
+    
 def lookup_word_lingua_libre(word, languageCode):
     audioList = []
     wordEncoded = urllib.parse.quote(word)
