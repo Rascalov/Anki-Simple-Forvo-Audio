@@ -143,6 +143,8 @@ class ForvoTts(QDialog):
         self.currentSearchResults = {}
         self.deleteItemsOfLayout(self.verticalLayout)
         results = []
+
+
         if(eval(self.config["Use sources besides Forvo"])):
             results.extend(lookup_word_lingua_libre(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
 
@@ -152,9 +154,15 @@ class ForvoTts(QDialog):
             results.extend(scrape_yandex_tts(self.textBox.text()))
             self.lblScrollFieldResults.setText("OpenRussian:")
         elif(len(results) == 0):
-            self.lblScrollFieldResults.setText("No results found...")
+            results.extend(forga_lookup(self.textBox.text(), self.languageSelectBox.currentText()))
+            if len(results) == 0:
+                self.lblScrollFieldResults.setText("No results found...")
+            else:
+                self.lblScrollFieldResults.setText("Results:")
         else:
             self.lblScrollFieldResults.setText("Results:")
+        
+
         for result in results:
             print(result.getBucketFilename())
             self.currentSearchResults[result.getBucketFilename()] = result
