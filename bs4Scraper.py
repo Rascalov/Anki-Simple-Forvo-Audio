@@ -10,6 +10,7 @@ import traceback
 import random
 import re
 import requests
+from requests.exceptions import HTTPError, Timeout, RequestException
 
 """
 This scraper is used when my own cdn does not have the word(s) we seek.
@@ -144,9 +145,7 @@ def lookup_word(word, languageCode, automatic=False):
         print("FORVO: Word not found (Language Container does not exist!)")
         return audioList # no results for that language-code
     
-    pronounciations = speachSection.select(f"ul#phrase-pronunciations-list-{languageCode}-" )
-    for pronounciation in pronounciations:
-        pronounciation.decompose()
+    speachSection = remove_noise(speachSection, languageCode)
 
     div_audios = speachSection.select("div[id^='play_']")
     if(automatic):
@@ -159,7 +158,15 @@ def lookup_word(word, languageCode, automatic=False):
         print("No words found in existing countainer")
     return audioList
 
+def remove_noise(html, languageCode):
+    # Remove audios that are part of the page but not the word itself
+    noise = html.select(f"ul#phrase-pronunciations-list-{languageCode}-" )
+    noise.extend(html.select(f"div.extra-info-container"))
+    for pronounciation in noise:
+        pronounciation.decompose()
 
+    return html
+    
 def lookup_word_lingua_libre(word, languageCode):
     audioList = []
     wordEncoded = urllib.parse.quote(word)
@@ -203,7 +210,26 @@ def scrape_yandex_tts(word):
     audioList.append(AnkiAudioObject(word, wordID , location))
     return audioList
 
+def forga_lookup(word, languageCode):
+    results = []
+    url = f"http://forga.charitycook.com:8001/audios?language={languageCode}&value={word}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+        for audio in data:
+            results.append(AnkiAudioObject(word, audio['id'], audio['link']))
+        
+    except HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Timeout as timeout_err:
+        print(f"Timeout error occurred: {timeout_err}")
+    except RequestException as req_err:
+        print(f"Request error occurred: {req_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
 
+    return results
 
 # To debug, Comment out the AnkiAudioObject imports and make the audiolist append the element, not the object. (line 160-161) 
 #print(lookup_word("слова", "ru"))
