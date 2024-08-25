@@ -4,6 +4,7 @@ from enum import Enum
 from bs4 import BeautifulSoup 
 from aqt import mw
 import random
+import platform
 
 languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_af', 'Aghul_agx', 'Akan_ak', 'Albanian_sq', 'Algerian Arabic_arq', 'Algonquin_alq',
              'Amharic_am', 'Ancient Greek_grc', 'Arabic_ar', 'Aragonese_an', 'Arapaho_arp', 'Arbëresh_aae', 'Armenian_hy', 'Aromanian_rup', 'Assamese_as', 'Assyrian Neo-Aramaic_aii',
@@ -93,3 +94,12 @@ def download_Audio(word, link, path, filename, tempdownload = False):
         print("Failed to download " + filename)
         print(e)
 
+
+def getDefiniteConfigPath():
+        os_platform = platform.system()
+        configPath = mw.addonManager.getConfig(__name__)["downloadPath"]
+        if(configPath == ""):
+            return mw.col.media.dir() + "\\" if os_platform == "Windows" else mw.col.media.dir() + "/"
+        if(configPath[-1] != "\\" or configPath[-1] !="/"):
+            configPath = configPath + "\\" if os_platform == "Windows" else configPath + "/"
+        return configPath

@@ -2,12 +2,11 @@ from aqt.qt import *
 import aqt.sound
 #from aqt.QtCore import QFile, QObject
 from aqt import mw
-from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject
+from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject, getDefiniteConfigPath
 from .bs4Scraper import *
 import os
 import glob
 from threading import *
-import platform
 import re
 
 
@@ -191,24 +190,24 @@ class ForvoTts(QDialog):
 
     def previewAudio(self, audioObject):
         #download as temp, maybe do an exists check first?
-        fullpath = self.getDefinteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + audioObject.getBucketFilename()
+        fullpath = getDefiniteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + audioObject.getBucketFilename()
         if(os.path.isfile(fullpath)):
             print(fullpath + " is a file, playing...")
             aqt.sound.play(fullpath)
         else:
-            print(fullpath + " is not a file,downaloding...")
-            download_Audio(audioObject.word, audioObject.link, self.getDefinteConfigPath(), audioObject.getBucketFilename(), True)
+            print(fullpath + " is not a file, downloading...")
+            download_Audio(audioObject.word, audioObject.link, getDefiniteConfigPath(), audioObject.getBucketFilename(), True)
             aqt.sound.play(fullpath)
 
     def insertIntoCard(self, ankiAudioObject):
         #select the forvo audio to add. 
-        fullpath = self.getDefinteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + ankiAudioObject.getBucketFilename()
+        fullpath = getDefiniteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + ankiAudioObject.getBucketFilename()
         if(os.path.isfile(fullpath)): # if it was a temp file, rename it
             print("Renaming temporary file ", ankiAudioObject.getBucketFilename() , "to permanent file")
-            os.rename(fullpath, self.getDefinteConfigPath() + ankiAudioObject.getBucketFilename())
+            os.rename(fullpath, getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
         else: # else download it without temp prefix
-            print("Downloading ", ankiAudioObject.word, " to ", self.getDefinteConfigPath() + ankiAudioObject.getBucketFilename())
-            download_Audio(ankiAudioObject.word, ankiAudioObject.link, self.getDefinteConfigPath(), ankiAudioObject.getBucketFilename())
+            print("Downloading ", ankiAudioObject.word, " to ", getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
+            download_Audio(ankiAudioObject.word, ankiAudioObject.link, getDefiniteConfigPath(), ankiAudioObject.getBucketFilename())
         
         if(eval(self.config["Remember language on a per deck basis"])):
             # Get current deck's description and adjust it if language
@@ -238,15 +237,6 @@ class ForvoTts(QDialog):
                     self.deleteItemsOfLayout(item.layout())
 
     def deleteTempFiles(self):
-        for tempFile in glob.glob(self.getDefinteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + '*'):
+        for tempFile in glob.glob(getDefiniteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + '*'):
             print("Deleting: ", tempFile)
             os.remove(tempFile)
-
-    def getDefinteConfigPath(self):
-        os_platform = platform.system()
-        configPath = self.config["downloadPath"]
-        if(configPath == ""):
-            return mw.col.media.dir() + "\\" if os_platform == "Windows" else mw.col.media.dir() + "/"
-        if(configPath[-1] != "\\" or configPath[-1] !="/"):
-            configPath = configPath + "\\" if os_platform == "Windows" else configPath + "/"
-        return configPath
