@@ -210,11 +210,15 @@ def scrape_yandex_tts(word):
     audioList.append(AnkiAudioObject(word, wordID , location))
     return audioList
 
-def forga_lookup(word, languageCode):
+def forga_lookup(word, languageCode, automatic=False):
+    word = word.rstrip()
+    print(f"Forga: looking up: '{word}' in language '{languageCode}'")
     results = []
     url = f"http://forga.charitycook.com:8001/audios?language={languageCode}&value={word}"
+    print(f"URL: {url}")
     try:
         response = requests.get(url)
+        print(f"response status: {response.status_code}")
         if response.status_code == 200:
             data = response.json()
         for audio in data:
@@ -227,7 +231,12 @@ def forga_lookup(word, languageCode):
     except RequestException as req_err:
         print(f"Request error occurred: {req_err}")
     except Exception as err:
-        print(f"An error occurred: {err}")
+        print(f"Forga: An error occurred: {err}")
+
+
+    print(f"Forga: Results count: {len(results)}")
+    if automatic and len(results) > 0: 
+        return [results[0]]
 
     return results
 
