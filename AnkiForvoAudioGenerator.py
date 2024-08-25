@@ -18,7 +18,6 @@ class AnkiForvoAudioGenerator(QThread):
         self.forvoAudioTargets = forvoAudioTargets
         self.cards = cards
         self.audioClearOption = audioClearOption
-        print(f"Qthread: Audio clear is {audioClearOption}")
         self.acquisitionType = acquisitionType
         self.config = mw.addonManager.getConfig(__name__)
         self.ignorePunctuation = eval(self.config["ignorePunctuation"])
@@ -58,7 +57,7 @@ class AnkiForvoAudioGenerator(QThread):
                     if(len(words) != 0):
                         # download the audio(s) from the given link.
                         for word in words:
-                            print("Downloading " + word.word + " to: " + word.getBucketFilename())
+                            #print("Downloading " + word.word + " to: " + word.getBucketFilename())
                             download_Audio(word.word, word.link , getDefiniteConfigPath(), word.getBucketFilename())
                             # set the audio to the target field as [sound:{name.ogg}] (if not already existing)
                             if(("[sound:" + word.getBucketFilename() + "]" in card.note()[target.targetFieldName] ) == False): #check duplicate
@@ -70,7 +69,6 @@ class AnkiForvoAudioGenerator(QThread):
         self.finished.emit()
 
     def cardContainsTargets(self, card): 
-        #print(card.note().keys())
         for target in self.forvoAudioTargets:
             if((target.fieldName in card.note().keys()) == False):
                 return False
