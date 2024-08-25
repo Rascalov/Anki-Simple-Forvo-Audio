@@ -26,8 +26,8 @@ class AnkiForvoAudioGenerator(QThread):
     finished = pyqtSignal()
     countChanged = pyqtSignal(int)
     limit = pyqtSignal(int)
-    testresults = forga_lookup("word", "English_en")
-    print(f"TEST: result count: {len(testresults)}")
+    # Somehow, we need to do 1 lookup as a warm up, because the first lookup always get this error: unknown error (_ssl.c:3161)
+    testresults = lookup_word("word", "English_en")
 
     def run(self):
         count = 0
