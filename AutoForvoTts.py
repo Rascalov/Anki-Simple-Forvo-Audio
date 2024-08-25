@@ -157,8 +157,8 @@ class AutoForvoTts(QDialog):
         self.radiobtnForvoWithCDN.setText("CDN + Forvo as Backup")
         # Radio button only forvo
         self.radiobtnForvo = QRadioButton()
-        self.radiobtnForvo.setText("Only Forvo")
-        self.radiobtnForvo.setChecked(True)
+        self.radiobtnForvo.setText("Only Forvo (Broken)")
+        self.radiobtnForvoWithCDN.setChecked(True)
         self.ScrapingOptionsContainerLayout.addWidget(self.radiobtnForvoWithCDN)
         self.ScrapingOptionsContainerLayout.addWidget(self.radiobtnForvo)
         
@@ -233,7 +233,7 @@ class AutoForvoTts(QDialog):
 
     def retranslateUi(self, Dialog):
         _translate = QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "ForvoTTS Generator (STILL IN TESTING)"))
+        Dialog.setWindowTitle(_translate("Dialog", "ForvoTTS Generator (Beta)"))
         self.lblSelectDeck.setText(_translate("Dialog", "Select Deck:"))
         self.pushButtonStart.setText(_translate("Dialog", "Start"))
         self.lblSelectFields.setText(_translate("Dialog", "Select which field(s) and their language:"))
