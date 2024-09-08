@@ -204,7 +204,7 @@ class ForvoTts(QDialog):
         fullpath = getDefiniteConfigPath() + AnkiAudioGlobals.TEMP_FILE_PREFIX + ankiAudioObject.getBucketFilename()
         if(os.path.isfile(fullpath)): # if it was a temp file, rename it
             print("Renaming temporary file ", ankiAudioObject.getBucketFilename() , "to permanent file")
-            os.rename(fullpath, getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
+            os.replace(fullpath, getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
         else: # else download it without temp prefix
             print("Downloading ", ankiAudioObject.word, " to ", getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
             download_Audio(ankiAudioObject.word, ankiAudioObject.link, getDefiniteConfigPath(), ankiAudioObject.getBucketFilename())
