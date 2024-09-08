@@ -44,7 +44,7 @@ languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_a
 
 class AnkiAudioObject:
     def __init__(self, word, id, link, votes=0):
-        self.word = word
+        self.word = clean_filename(word)
         self.id = id
         self.link = link
         self.votes = votes
@@ -57,6 +57,24 @@ class AnkiAudioObject:
         return self.word + "-" + str(self.id) + "." + fileExtension
     def getVotes(self):
         return int(self.votes.replace("votes", ""))
+
+    def clean_filename(filename, replacement_char='_'):
+        """
+        Remove illegal characters from a filename.
+
+        Args:
+        filename (str): The original filename.
+        replacement_char (str): Character to replace illegal characters with (default: '_').
+
+        Returns:
+        str: Cleaned filename.
+        """
+        illegal_chars = r'[\/:*?"<>|]'
+        # Replace illegal characters with the specified replacement character
+        cleaned_filename = re.sub(illegal_chars, replacement_char, filename)
+        
+        return cleaned_filename
+
 
 class AnkiAudioTarget:
     def __init__(self, fieldName, language, targetFieldName):
@@ -83,7 +101,6 @@ class AnkiAudioGlobals():
 
 def download_Audio(word, link, path, filename, tempdownload = False):
     
-    filename = clean_filename(filename)
     wordEncoded = urllib.parse.quote(word)
     link = link.replace(word, wordEncoded) # not applicable to forvo downloads. 
     if(tempdownload):
@@ -106,20 +123,3 @@ def getDefiniteConfigPath():
         if(configPath[-1] != "\\" or configPath[-1] !="/"):
             configPath = configPath + "\\" if os_platform == "Windows" else configPath + "/"
         return configPath
-
-def clean_filename(filename, replacement_char='_'):
-    """
-    Remove illegal characters from a filename.
-
-    Args:
-    filename (str): The original filename.
-    replacement_char (str): Character to replace illegal characters with (default: '_').
-
-    Returns:
-    str: Cleaned filename.
-    """
-    illegal_chars = r'[\/:*?"<>|]'
-    # Replace illegal characters with the specified replacement character
-    cleaned_filename = re.sub(illegal_chars, replacement_char, filename)
-    
-    return cleaned_filename
