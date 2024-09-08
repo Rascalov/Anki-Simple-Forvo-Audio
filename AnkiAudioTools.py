@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from aqt import mw
 import random
 import platform
+import re
 
 languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_af', 'Aghul_agx', 'Akan_ak', 'Albanian_sq', 'Algerian Arabic_arq', 'Algonquin_alq',
              'Amharic_am', 'Ancient Greek_grc', 'Arabic_ar', 'Aragonese_an', 'Arapaho_arp', 'Arbëresh_aae', 'Armenian_hy', 'Aromanian_rup', 'Assamese_as', 'Assyrian Neo-Aramaic_aii',
@@ -81,6 +82,8 @@ class AnkiAudioGlobals():
     forvoRequests = 0
 
 def download_Audio(word, link, path, filename, tempdownload = False):
+    
+    filename = clean_filename(filename)
     wordEncoded = urllib.parse.quote(word)
     link = link.replace(word, wordEncoded) # not applicable to forvo downloads. 
     if(tempdownload):
@@ -103,3 +106,20 @@ def getDefiniteConfigPath():
         if(configPath[-1] != "\\" or configPath[-1] !="/"):
             configPath = configPath + "\\" if os_platform == "Windows" else configPath + "/"
         return configPath
+
+def clean_filename(filename, replacement_char='_'):
+    """
+    Remove illegal characters from a filename.
+
+    Args:
+    filename (str): The original filename.
+    replacement_char (str): Character to replace illegal characters with (default: '_').
+
+    Returns:
+    str: Cleaned filename.
+    """
+    illegal_chars = r'[\/:*?"<>|]'
+    # Replace illegal characters with the specified replacement character
+    cleaned_filename = re.sub(illegal_chars, replacement_char, filename)
+    
+    return cleaned_filename
