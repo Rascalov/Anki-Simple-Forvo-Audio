@@ -44,7 +44,7 @@ languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_a
 
 class AnkiAudioObject:
     def __init__(self, word, id, link, votes=0):
-        self.word = clean_filename(word)
+        self.word = self.clean_filename(word)
         self.id = id
         self.link = link
         self.votes = votes
@@ -58,7 +58,7 @@ class AnkiAudioObject:
     def getVotes(self):
         return int(self.votes.replace("votes", ""))
 
-    def clean_filename(filename, replacement_char='_'):
+    def clean_filename(self, filename, replacement_char='_'):
         """
         Remove illegal characters from a filename.
 
