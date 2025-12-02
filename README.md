@@ -1,6 +1,18 @@
 ![Fetch Gif SHould be here](/githubAssets/Select-and-Fetch.gif)
 
-# Installation
+# Installation methods
+
+## (Easy) From the Anki Add-ons collection
+- Open Anki on your computer
+- Go to the Tools->Add-ons menu item
+- click on **Get Add-ons** and paste in the code.
+>560814150
+- Restart your Anki and you're good to go.
+
+![alt text](/githubAssets/installation.png)
+
+## (Tedious) From the repository source
+
 Either clone this repository to your Anki-Addons folder or download the zip in [Releases](https://github.com/Rascalov/Anki-Simple-Forvo-Audio/releases), unzip it, and put in your addon folder
 
 You should be good to go. But should the audio not play, you might need to set the download path:
