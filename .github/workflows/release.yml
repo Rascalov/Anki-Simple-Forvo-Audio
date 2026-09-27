@@ -1,0 +1,103 @@
+name: Release
+
+# Existing tags in this repository are bare ("1.2.2"), so both spellings match.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+*"
+      - "v[0-9]+.[0-9]+*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build. Produces an artifact only, no release."
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # The dialog tests stub out Anki but still need real Qt, and they skip
+      # themselves silently if it is missing. libegl1 is what the offscreen
+      # platform plugin links against on a headless runner.
+      - name: Install Qt for the dialog tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libegl1 libxkbcommon-x11-0
+          pip install PyQt6
+
+      - name: Run tests
+        working-directory: tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m unittest discover -v
+
+      - name: Work out the version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME}"
+          fi
+          echo "version=${version#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build the .ankiaddon
+        run: python tools/build_ankiaddon.py --version "${{ steps.version.outputs.version }}"
+
+      # A .ankiaddon is only valid if the add-on sits at the root of the zip,
+      # so check that rather than trusting the build.
+      - name: Check the package installs the way Anki expects
+        run: |
+          python - <<'PY'
+          import glob, json, zipfile
+          path = glob.glob("dist/*.ankiaddon")[0]
+          names = zipfile.ZipFile(path).namelist()
+          assert "__init__.py" in names, "add-on is not at the root of the zip"
+          assert not any("__pycache__" in n for n in names), "__pycache__ in package"
+          assert not any(n.startswith(("tests/", "githubAssets/", ".github/")) for n in names)
+          manifest = json.loads(zipfile.ZipFile(path).read("manifest.json"))
+          print(path, json.dumps(manifest, indent=2))
+          PY
+
+      - name: Pull the release notes out of the changelog
+        id: notes
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          if awk -v v="$version" '
+                $0 ~ "^## +v?" v "( |$)" {found=1; next}
+                found && /^## / {exit}
+                found {print}
+              ' CHANGELOG.md > release-notes.md && [ -s release-notes.md ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::CHANGELOG.md has no section for $version; using generated notes"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ankiaddon-${{ steps.version.outputs.version }}
+          path: dist/*.ankiaddon
+          if-no-files-found: error
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ steps.notes.outputs.found }}" = "true" ]; then
+            gh release create "$GITHUB_REF_NAME" dist/*.ankiaddon \
+              --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.ankiaddon \
+              --title "$GITHUB_REF_NAME" --generate-notes
+          fi

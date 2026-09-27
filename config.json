@@ -1,8 +1,7 @@
 {
-    "downloadPath":"",
-    "ignorePunctuation": "False",
-    "MaxForvoDownloads": 100,
+    "downloadPath": "",
     "audioFileExtension": "mp3",
-    "Remember language on a per deck basis":"False",
-    "Use sources besides Forvo": "False"
+    "Remember language on a per deck basis": "False",
+    "Use fallback sources": "True",
+    "coverHeadwordsUpToWords": 6
 }
