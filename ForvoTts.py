@@ -1,9 +1,8 @@
 from aqt.qt import *
 import aqt.sound
-#from aqt.QtCore import QFile, QObject
 from aqt import mw
-from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, AnkiAudioObject, getDefiniteConfigPath
-from .bs4Scraper import *
+from .AnkiAudioTools import languages, download_Audio, AnkiAudioGlobals, getDefiniteConfigPath
+from .ovrofCDN import getAudioSources
 import os
 import glob
 from threading import *
@@ -33,7 +32,7 @@ class ForvoTts(QDialog):
         Dialog.resize(320, 250) #w h 
 
         
-        Dialog.setWindowTitle("Forvo TTS for")
+        Dialog.setWindowTitle("Add TTS for")
         # finish button
         self.pushButtonStart = QPushButton(Dialog)
         self.pushButtonStart.setGeometry(QRect(195, 350, 150, 28))
@@ -141,26 +140,13 @@ class ForvoTts(QDialog):
     def start_lookup(self, context):
         self.currentSearchResults = {}
         self.deleteItemsOfLayout(self.verticalLayout)
-        results = []
 
+        results = getAudioSources(self.textBox.text(), self.languageSelectBox.currentText())
 
-        if(eval(self.config["Use sources besides Forvo"])):
-            results.extend(lookup_word_lingua_libre(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
-
-        results.extend(lookup_word(self.textBox.text(), self.languageSelectBox.currentText().split("_")[1]))
-        if(len(results) == 0 and self.languageSelectBox.currentText() == "Russian_ru" and eval(self.config["Use sources besides Forvo"])):
-            # Additional yandex translation. 
-            results.extend(scrape_yandex_tts(self.textBox.text()))
-            self.lblScrollFieldResults.setText("OpenRussian:")
-        elif(len(results) == 0):
-            results.extend(forga_lookup(self.textBox.text(), self.languageSelectBox.currentText()))
-            if len(results) == 0:
-                self.lblScrollFieldResults.setText("No results found...")
-            else:
-                self.lblScrollFieldResults.setText("Results:")
+        if(len(results) == 0):
+            self.lblScrollFieldResults.setText("No results found...")
         else:
             self.lblScrollFieldResults.setText("Results:")
-        
 
         for result in results:
             print(result.getBucketFilename())
@@ -196,7 +182,7 @@ class ForvoTts(QDialog):
             aqt.sound.play(fullpath)
         else:
             print(fullpath + " is not a file, downloading...")
-            download_Audio(audioObject.word, audioObject.link, getDefiniteConfigPath(), audioObject.getBucketFilename(), True)
+            download_Audio(audioObject.link, getDefiniteConfigPath(), audioObject.getBucketFilename(), True)
             aqt.sound.play(fullpath)
 
     def insertIntoCard(self, ankiAudioObject):
@@ -207,7 +193,7 @@ class ForvoTts(QDialog):
             os.replace(fullpath, getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
         else: # else download it without temp prefix
             print("Downloading ", ankiAudioObject.word, " to ", getDefiniteConfigPath() + ankiAudioObject.getBucketFilename())
-            download_Audio(ankiAudioObject.word, ankiAudioObject.link, getDefiniteConfigPath(), ankiAudioObject.getBucketFilename())
+            download_Audio(ankiAudioObject.link, getDefiniteConfigPath(), ankiAudioObject.getBucketFilename())
         
         if(eval(self.config["Remember language on a per deck basis"])):
             # Get current deck's description and adjust it if language

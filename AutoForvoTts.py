@@ -2,47 +2,29 @@ from aqt.qt import *
 from aqt import mw
 from aqt.utils import showInfo
 from .AnkiForvoAudioGenerator import AnkiForvoAudioGenerator
-from .AnkiAudioTools import AnkiAudioTarget, AudioClearingOptions, AcquisitionType, AnkiAudioGlobals
+from .AnkiAudioTools import AnkiAudioTarget, AudioClearingOptions, configBool, languages
 
-# TODO: To anyone even remotely familiar with QT, this probably looks horrendous. Revamp encouraged. 
+# TODO: To anyone even remotely familiar with QT, this probably looks horrendous. Revamp encouraged.
+
+# How many decks the dropdown shows before it starts scrolling, and how wide it
+# is allowed to get for deeply nested deck names.
+DECK_POPUP_ROWS = 15
+DECK_POPUP_MAX_WIDTH = 900
+
 
 class AutoForvoTts(QDialog):
-    languages = ['Abaza_abq', 'Abkhazian_ab', 'Adygean_ady', 'Afar_aa', 'Afrikaans_af', 'Aghul_agx', 'Akan_ak', 'Albanian_sq', 'Algerian Arabic_arq', 'Algonquin_alq',
-             'Amharic_am', 'Ancient Greek_grc', 'Arabic_ar', 'Aragonese_an', 'Arapaho_arp', 'Arbëresh_aae', 'Armenian_hy', 'Aromanian_rup', 'Assamese_as', 'Assyrian Neo-Aramaic_aii',
-             'Asturian_ast', 'Avaric_av', 'Aymara_ay', 'Azerbaijani_az', 'Bakhtiari_bqi', 'Balochi_bal', 'Bambara_bm', 'Bardi_bcj', 'Bashkir_ba', 'Basque_eu', 'Bavarian_bar', 'Belarusian_be',
-             'Bemba_bem', 'Bench_bcq', 'Bengali_bn', 'Biblical Hebrew_hbo', 'Bihari_bh', 'Bislama_bi', 'Bosnian_bs', 'Bouyei_pcc', 'Breton_br', 'Bulgarian_bg', 
-             'Burmese_my', 'Burushaski_bsk', 'Buryat_bxr', 'Campidanese_sro', 'Cantonese_yue', 'Cape Verdean Creole_kea', 'Catalan_ca', 'Cebuano_ceb', 'Central Atlas Tamazight_tzm', 
-             'Central Bikol_bcl', 'Chamorro_ch', 'Changzhou_plig', 'Chechen_ce', 'Cherokee_chr', 'Chichewa_ny', 'Chuvash_cv', 'Coptic_cop', 'Cornish_kw', 'Corsican_co', 
-             'Cree_cr', 'Crimean Tatar_crh', 'Croatian_hr', 'Czech_cs', 'Dagbani_dag', 'Danish_da', 'Dari_prs', 'Divehi_dv', 'Dusun_dtp', 'Dutch_nl', 'Dzongkha_dz', 'Edo_bin', 
-             'Egyptian Arabic_arz', 'Emilian_egl', 'English_en', 'Erzya_myv', 'Esperanto_eo', 'Estonian_et', 'Etruscan_ett', 'Ewe_ee', 'Ewondo_ewo', 'Faroese_fo', 'Fiji Hindi_hif', 
-             'Fijian_fj', 'Finnish_fi', 'Flemish_vls', 'Franco-Provençal_frp', 'French_fr', 'Frisian_fy', 'Friulan_fur', 'Fulah_ff', 'Fuzhou_fzho', 'Ga_gaa', 'Galician_gl', 'Gan Chinese_gan', 
-             'Georgian_ka', 'German_de', 'Gilaki_glk', 'Greek_el', 'Guarani_gn', 'Gujarati_gu', 'Gulf Arabic_afb', 'Gusii_guz', 'Haitian Creole_ht', 'Hakka_hak', 'Hassaniyya_mey', 'Hausa_ha', 
-             'Hawaiian_haw', 'Hebrew_he', 'Herero_hz', 'Hiligaynon_hil', 'Hindi_hi', 'Hmong_hmn', 'Hungarian_hu', 'Icelandic_is', 'Igbo_ig', 'Iloko_ilo', 'Indonesian_ind', 'Ingush_inh', 
-             'Interlingua_ia', 'Inuktitut_iu', 'Irish_ga', 'Italian_it', 'Iwaidja_ibd', 'Jamaican Patois_jam', 'Japanese_ja', 'Javanese_jv', 'Jeju_jje', 'Jiaoliao Mandarin_jliu', 
-             'Jin Chinese_cjy', 'Judeo-Spanish_lad', 'Kabardian_kbd', 'Kabyle_kab', 'Kalaallisut_kl', 'Kalenjin_kln', 'Kalmyk_xal', 'Kannada_kn', 'Karachay-Balkar_krc', 'Karakalpak_kaa', 
-             'Kashmiri_ks', 'Kashubian_csb', 'Kazakh_kk', 'Khasi_kha', 'Khmer_km', 'Kikuyu_ki', 'Kimbundu_kmb', 'Kinyarwanda_rw', 'Kirundi_rn', 'Klingon_tlh', 'Komi_kv', 
-             'Konkani_gom', 'Korean_ko', 'Kotava_avk', 'Krio_kri', 'Kurdish_ku', 'Kurmanji_kmr', 'Kutchi_kfr', 'Kyrgyz_ky', 'Ladin_lld', 'Lakota_lkt', 'Lao_lo', 'Latgalian_ltg', 
-             'Latin_la', 'Latvian_lv', 'Laz_lzz', 'Lezgian_lez', 'Ligurian_lij', 'Limburgish_li', 'Lingala_ln', 'Lithuanian_lt', 'Lombard_lmo', 'Louisiana Creole_lou', 'Low German_nds', 
-             'Lower Yangtze Mandarin_juai', 'Lozi_loz', 'Luganda_lg', 'Luo_luo', 'Lushootseed_lut', 'Luxembourgish_lb', 'Macedonian_mk', 'Mainfränkisch_vmf', 'Malagasy_mg', 'Malay_ms', 
-             'Malayalam_ml', 'Maltese_mt', 'Manchu_mnc', 'Mandarin Chinese_zh', 'Mansi_mns', 'Manx_gv', 'Māori_mi', 'Mapudungun_arn', 'Marathi_mr', 'Mari_chm', 'Marshallese_mh', 
-             'Masbateño_msb', 'Mauritian Creole_mfe', 'Mazandarani_mzn', 'Mbe_mfo', 'Mennonite Low German_pdt', 'Micmac_mic', 'Middle Chinese_ltc', 'Middle English_enm', 
-             'Min Dong_cdo', 'Min Nan_nan', 'Minangkabau_min', 'Mingrelian_xmf', 'Minjaee Luri_lrc', 'Mohawk_moh', 'Moksha_mdf', 'Moldovan_mo', 'Mongolian_mn', 'Moroccan Arabic_ary', 
-             'Nahuatl_nah', 'Naskapi_nsk', 'Navajo_nv', 'Naxi_nxq', 'Ndonga_ng', 'Neapolitan_nap', 'Nepal Bhasa_new', 'Nepali_ne', 'Nogai_nog', 'North Levantine Arabic_apc', 'Northern Sami_sme', 
-             'Norwegian_no', 'Norwegian Nynorsk_nn', 'Nuosu_ii', 'Nǀuu_ngh', 'Occitan_oc', 'Ojibwa_oj', 'Okinawan_ryu', 'Old English_ang', 'Old Norse_non', 'Old Turkic_otk', 'Oriya_or', 
-             'Oromo_om', 'Ossetian_os', 'Ottoman Turkish_ota', 'Palauan_pau', 'Palenquero_pln', 'Pali_pi', 'Pangasinan_pag', 'Papiamento_pap', 'Pashto_ps', 'Pennsylvania Dutch_pdc', 
-             'Persian_fa', 'Picard_pcd', 'Piedmontese_pms', 'Pitjantjatjara_pjt', 'Polish_pl', 'Portuguese_pt', 'Pu-Xian Min_cpx', 'Pulaar_fuc', 'Punjabi_pa', 'Quechua_qu', 
-             'Quenya_qya', 'Quiatoni Zapotec_zpf', 'Rapa Nui_rap', 'Reunionese Creole_rcf', 'Romagnol_rgn', 'Romani_rom', 'Romanian_ro', 'Romansh_rm', 'Rukiga_cgg', 
-             'Russian_ru', 'Rusyn_rue', 'Samoan_sm', 'Sango_sg', 'Sanskrit_sa', 'Saraiki_skr', 'Sardinian_sc', 'Scots_sco', 'Scottish Gaelic_gd', 'Seediq_trv', 'Serbian_sr', 
-             'Shanghainese_jusi', 'Shilha_shi', 'Shona_sn', 'Siberian Tatar_sty', 'Sicilian_scn', 'Silesian_szl', 'Silesian German_sli', 'Sindhi_sd', 'Sinhalese_si', 'Slovak_sk', 
-             'Slovenian_sl', 'Somali_so', 'Soninke_snk', 'Sotho_st', 'Southwestern Mandarin_xghu', 'Spanish_es', 'Sranan Tongo_srn', 'Sundanese_su', 'Swabian German_swg', 'Swahili_sw', 
-             'Swati_ss', 'Swedish_sv', 'Swiss German_gsw', 'Sylheti_syl', 'Tagalog_tl', 'Tahitian_ty', 'Tajik_tg', 'Talossan_tzl', 'Talysh_tly', 'Tamil_ta', 'Tatar_tt', 'Telugu_te', 
-             'Thai_th', 'Tibetan_bo', 'Tigrinya_ti', 'Toisanese Cantonese_tisa', 'Tok Pisin_tpi', 'Toki Pona_x-tp', 'Tondano_tdn', 'Tongan_to', 'Tswana_tn', 'Tunisian Arabic_aeb', 
-             'Turkish_tr', 'Turkmen_tk', 'Tuvan_tyv', 'Twi_tw', 'Ubykh_uby', 'Udmurt_udm', 'Ukrainian_uk', 'Upper Saxon_sxu', 'Upper Sorbian_hsb', 'Urdu_ur', 'Uyghur_ug', 'Uzbek_uz', 
-             'Venda_ve', 'Venetian_vec', 'Vietnamese_vi', 'Volapük_vo', 'Võro_vro', 'Walloon_wa', 'Welsh_cy', 'Wenzhounese_qjio', 'Wolof_wo', 'Wu Chinese_wuu', 'Xhosa_xh', 'Xiang Chinese_hsn', 
-             'Yakut_sah', 'Yeyi_yey', 'Yiddish_yi', 'Yoruba_yo', 'Yucatec Maya_yua', 'Yupik_esu', 'Zazaki_zza', 'Zhuang_za', 'Zulu_zu']
-    #print(languages)
     def __init__(self, parent):
         super(AutoForvoTts, self).__init__(parent)
+        # The deck whose fields are currently loaded. Typing in the deck box
+        # filters the list but chooses nothing, so this only moves when a deck
+        # is actually picked.
+        self.loadedDeckName = None
+        self.attemptedDeckName = None
+        self.selectingDeck = False
+        self.deckNamesByLower = {}
+        self.cards = []
+        self.fieldList = []
+        self.fieldNames = []
         self.setupUi(self)
 
     def addFieldOption(self, targetFieldName):
@@ -53,7 +35,7 @@ class AutoForvoTts(QDialog):
         checkbox.setText(targetFieldName)
         # Language Select ComboBox
         languageSelectBox = QComboBox(self.scrollAreaWidgetContents)
-        languageSelectBox.addItems(self.languages)
+        languageSelectBox.addItems(languages)
         languageSelectBox.setStyleSheet("combobox-popup: 0;")
         # Field Select ComboBox
         fieldSelectBox = QComboBox(self.scrollAreaWidgetContents)
@@ -68,12 +50,86 @@ class AutoForvoTts(QDialog):
         self.verticalLayout.addLayout(container)
         self.fieldList.append([checkbox, languageSelectBox, fieldSelectBox])
 
-    def deckSeletionChanged(self, deckName):
-        self.fieldList = [] # 2d array of object, 1d = 1 row, 2d = the row's widgets
+    def widenDeckPopup(self, names):
+        """Let the dropdown be as wide as its longest deck name.
+
+        The combobox has to fit the dialog, but the popup does not, and a
+        nested name elided to '#Dailies::Russi...' is impossible to pick from.
+        """
+        view = self.comboBoxDeckSelection.view()
+        metrics = view.fontMetrics()
+        widest = max((metrics.horizontalAdvance(name) for name in names), default=0)
+        scrollbar = view.verticalScrollBar().sizeHint().width()
+        view.setMinimumWidth(min(widest + scrollbar + 24, DECK_POPUP_MAX_WIDTH))
+        view.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+
+    def setupDeckCompleter(self):
+        """Type-to-filter the deck list: matches anywhere in the name, any case.
+
+        The completer runs over the combobox's own model, so picking from its
+        popup moves the combobox with it.
+        """
+        completer = QCompleter(self.comboBoxDeckSelection.model(), self.comboBoxDeckSelection)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        completer.activated[str].connect(self.selectDeck)
+        completer.popup().setMinimumWidth(self.comboBoxDeckSelection.view().minimumWidth())
+        self.comboBoxDeckSelection.setCompleter(completer)
+        self.deckCompleter = completer
+
+    def onDeckActivated(self, index):
+        """The user picked a row from the dropdown."""
+        self.selectDeck(self.comboBoxDeckSelection.itemText(index))
+
+    def onDeckTyped(self, text):
+        """Typing filters the list. It is not a choice, so Start goes off."""
+        if text != self.loadedDeckName:
+            self.pushButtonStart.setEnabled(False)
+
+    def onDeckTypingFinished(self):
+        """Commit a fully typed deck name, or put the real one back."""
+        typed = self.comboBoxDeckSelection.currentText().strip()
+        if typed == self.attemptedDeckName:
+            # Already tried this one; do not ask again every time focus moves.
+            return
+        match = self.deckNamesByLower.get(typed.lower())
+        if match:
+            self.selectDeck(match)
+        elif self.loadedDeckName:
+            # Half-typed filter text left in the box would look like a
+            # selection that never happened.
+            self.comboBoxDeckSelection.setEditText(self.loadedDeckName)
+            self.pushButtonStart.setEnabled(True)
+
+    def selectDeck(self, deckName, announce=True):
+        """Load the fields of a deck the user has committed to.
+
+        `announce` is off for the load that happens as the dialog opens, so an
+        empty deck cannot greet you with a modal before you have done anything.
+        """
+        if self.selectingDeck or deckName == self.loadedDeckName:
+            return
+        # Opening a modal from here moves focus, which fires editingFinished
+        # again; without this the error would reappear for as long as you click.
+        self.selectingDeck = True
         try:
-            self.pushButtonStart.setDisabled = True
-            self.deleteItemsOfLayout(self.verticalLayout)
-            deck = mw.col.decks.by_name(deckName)
+            self.loadDeck(deckName, announce)
+        finally:
+            self.selectingDeck = False
+
+    def loadDeck(self, deckName, announce):
+        self.loadedDeckName = None
+        self.attemptedDeckName = deckName
+        self.cards = []
+        self.fieldList = [] # 2d array of object, 1d = 1 row, 2d = the row's widgets
+        self.pushButtonStart.setEnabled(False)
+        # The box is too narrow to show a nested name in full once it is picked.
+        self.comboBoxDeckSelection.setToolTip(deckName)
+        if self.comboBoxDeckSelection.currentText() != deckName:
+            self.comboBoxDeckSelection.setEditText(deckName)
+        self.deleteItemsOfLayout(self.verticalLayout)
+        try:
             # get cards from deck. use double quotes in case of spaces
             self.cards = mw.col.find_cards("\"deck:" + str(deckName) + "\"")
             # take last card's fields (keys)
@@ -82,13 +138,15 @@ class AutoForvoTts(QDialog):
             for field in self.fieldNames:
                 #add to the scroll area: Checkbox, languageComboBox, FieldComboBox
                 self.addFieldOption(field)
-            self.pushButtonStart.setDisabled = False
+            self.loadedDeckName = deckName
+            self.pushButtonStart.setEnabled(True)
         except IndexError:
-            showInfo("Error: Couldn't find cards for selected deck!")
+            if announce:
+                showInfo("Error: Couldn't find cards for selected deck!")
         except Exception as e:
-            showInfo("Unknow error: " + str(e))
-        
-        
+            if announce:
+                showInfo("Unknown error: " + str(e))
+
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -117,20 +175,29 @@ class AutoForvoTts(QDialog):
         self.pushButtonStart = QPushButton(Dialog)
         self.pushButtonStart.setGeometry(QRect(195, 350, 90, 28))
         self.pushButtonStart.setObjectName("pushButtonStart")
+        # The deck box is a line edit now, and enter in a dialog fires the
+        # default button. Starting a whole deck run by accident is not on.
+        self.pushButtonStart.setAutoDefault(False)
         self.pushButtonStart.clicked.connect(self.startTheScraping)
         #
         self.lblSelectFields = QLabel(Dialog)
         self.lblSelectFields.setGeometry(QRect(100, 70, 261, 16))
         self.lblSelectFields.setObjectName("lblSelectFields")
+        #optional checkbox: fill in audio the CDN could not find with openrussian
+        self.checkBoxOpenRussian = QCheckBox(Dialog)
+        self.checkBoxOpenRussian.setGeometry(QRect(22, 250, 300, 21))
+        self.checkBoxOpenRussian.setChecked(configBool("Use openrussian for automated audio insertion"))
+        self.checkBoxOpenRussian.setObjectName("checkBoxOpenRussian")
+
         #optional checkbox clear previous input
         self.checkBoxClearPreviousInput = QCheckBox(Dialog)
-        self.checkBoxClearPreviousInput.setGeometry(QRect(22, 250, 241, 21))
+        self.checkBoxClearPreviousInput.setGeometry(QRect(22, 272, 241, 21))
         self.checkBoxClearPreviousInput.setChecked(False)
         self.checkBoxClearPreviousInput.setObjectName("checkBoxClearPreviousInput")
 
         #additional Radio button options for clearing previous audio
         self.clearOptionsContainerWidget = QWidget(Dialog)
-        self.clearOptionsContainerWidget.setGeometry(QRect(32, 270, 441, 34))
+        self.clearOptionsContainerWidget.setGeometry(QRect(32, 292, 441, 34))
         self.clearOptionsContainerLayout = QHBoxLayout(self.clearOptionsContainerWidget)
         self.clearOptionsContainerLayout.setSpacing(6)
         self.radiobtnClearAllText = QRadioButton()
@@ -143,25 +210,7 @@ class AutoForvoTts(QDialog):
         self.checkBoxClearPreviousInput.stateChanged.connect(self.setClearOptions)
         self.clearOptionsContainerLayout.addWidget(self.radiobtnClearAllText)
         self.clearOptionsContainerLayout.addWidget(self.radiobtnClearOnlySound)
-        
-        self.lblScrapingOptions = QLabel(Dialog)
-        self.lblScrapingOptions.setText("Acquisition method:")
-        self.lblScrapingOptions.setGeometry(QRect(25, 300, 200, 31))
-        #Radio buttons Hbox for the scraping methods
-        self.ScrapingOptionsContainerWidget = QWidget(Dialog)
-        self.ScrapingOptionsContainerWidget.setGeometry(QRect(32, 320, 441, 34))
-        self.ScrapingOptionsContainerLayout = QHBoxLayout(self.ScrapingOptionsContainerWidget)
-        self.ScrapingOptionsContainerLayout.setSpacing(6)
-        # Radio button forvo and CDN option
-        self.radiobtnForvoWithCDN = QRadioButton()
-        self.radiobtnForvoWithCDN.setText("CDN + Forvo as Backup")
-        # Radio button only forvo
-        self.radiobtnForvo = QRadioButton()
-        self.radiobtnForvo.setText("Only Forvo (Broken)")
-        self.radiobtnForvoWithCDN.setChecked(True)
-        self.ScrapingOptionsContainerLayout.addWidget(self.radiobtnForvoWithCDN)
-        self.ScrapingOptionsContainerLayout.addWidget(self.radiobtnForvo)
-        
+
         #scroll area
         self.scrollAreaFields = QScrollArea(Dialog)
         self.scrollAreaFields.setEnabled(True)
@@ -211,34 +260,50 @@ class AutoForvoTts(QDialog):
 
         #deck combobox
         self.comboBoxDeckSelection = QComboBox(Dialog)
-        self.comboBoxDeckSelection.setGeometry(QRect(140, 30, 82, 24))
-        self.comboBoxDeckSelection.setMaximumWidth(200)
-        self.comboBoxDeckSelection.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
-        self.comboBoxDeckSelection.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
-        self.comboBoxDeckSelection.setMinimumContentsLength(0)
+        self.comboBoxDeckSelection.setGeometry(QRect(140, 30, 225, 24))
         self.comboBoxDeckSelection.setObjectName("comboBoxDeckSelection")
-        self.comboBoxDeckSelection.currentTextChanged.connect(self.deckSeletionChanged)
-        print(mw.col.decks.all_names_and_ids())
+        # A native popup ignores maxVisibleItems and grows until it covers the
+        # screen, which a collection with many nested decks always does.
+        # 'combobox-popup: 0' forces the scrollable list view instead.
+        self.comboBoxDeckSelection.setStyleSheet("combobox-popup: 0;")
+        self.comboBoxDeckSelection.setMaxVisibleItems(DECK_POPUP_ROWS)
+        # Editable so the box can be typed into as a filter. NoInsert matters:
+        # otherwise pressing enter on filter text adds it to the deck list.
+        self.comboBoxDeckSelection.setEditable(True)
+        self.comboBoxDeckSelection.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.comboBoxDeckSelection.lineEdit().setPlaceholderText("Type to filter decks...")
         decklist = mw.col.decks.all_names_and_ids()
-        names = []
-        for deck in decklist:
-            names.append(deck.name)
-        # print(names)
-        #[decklist.name for item in decklist]
+        names = [deck.name for deck in decklist]
+        self.deckNamesByLower = {name.lower(): name for name in names}
         self.comboBoxDeckSelection.addItems(names)
         self.comboBoxDeckSelection.view().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        # The box itself is narrower than the dialog, but '#Dailies::Russian::
+        # Tochka Ru B1.2::урок 3.3::не ни' still has to be readable while
+        # choosing, so let the popup be as wide as its longest entry.
+        self.widenDeckPopup(names)
+        self.setupDeckCompleter()
+
+        # Only a committed choice loads a deck. currentTextChanged would fire
+        # on every keystroke, searching the collection for half a deck name.
+        self.comboBoxDeckSelection.activated.connect(self.onDeckActivated)
+        self.comboBoxDeckSelection.lineEdit().textEdited.connect(self.onDeckTyped)
+        self.comboBoxDeckSelection.lineEdit().editingFinished.connect(self.onDeckTypingFinished)
+        if names:
+            self.selectDeck(names[0], announce=False)
 
         self.retranslateUi(Dialog)
         QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "ForvoTTS Generator (Beta)"))
+        Dialog.setWindowTitle(_translate("Dialog", "Add TTS to Deck"))
         self.lblSelectDeck.setText(_translate("Dialog", "Select Deck:"))
         self.pushButtonStart.setText(_translate("Dialog", "Start"))
         self.lblSelectFields.setText(_translate("Dialog", "Select which field(s) and their language:"))
         self.checkBoxClearPreviousInput.setToolTip(_translate("Dialog", "Clear the audio field before adding the new tts to the audio field"))
         self.checkBoxClearPreviousInput.setText(_translate("Dialog", "Clear Previous Audio Field Input (?*)"))
+        self.checkBoxOpenRussian.setToolTip(_translate("Dialog", "When the CDN has no recording for a word or sentence, generate the missing audio with OpenRussian (Russian only)"))
+        self.checkBoxOpenRussian.setText(_translate("Dialog", "Use OpenRussian for missing audio (Russian only)"))
         self.lblScrollField.setText(_translate("Dialog", "Field:"))
         self.lblScrollLanguage.setText(_translate("Dialog", "Language:"))
         self.lblTargetField.setText(_translate("Dialog", "Audio Field:"))
@@ -278,35 +343,26 @@ class AutoForvoTts(QDialog):
         self.pushButtonStart.clicked.connect(self.cancelTheScraping)
         self.changeMutableState(False)
         self.progressBarAudio.setMaximum(len(self.cards))
-        self.completed = 0
-        #Determine which fields are to be used. field, language, and target field, maybe create a class?
+        #Determine which fields are to be used. field, language, and target field
         AnkiAudioTargets = []
         for row in self.fieldList:
             if(row[0].isChecked()):
                 AnkiAudioTargets.append(AnkiAudioTarget(row[0].text(), row[1].currentText(), row[2].currentText()))
 
-        #new thread to scrape audios with
         clearOption = AudioClearingOptions.NO_CLEAR
         if(self.checkBoxClearPreviousInput.isChecked()):
             if(self.radiobtnClearAllText.isChecked()):
                 clearOption = AudioClearingOptions.FULL_CLEAR
             elif(self.radiobtnClearOnlySound.isChecked()):
                 clearOption = AudioClearingOptions.AUDIO_CLEAR
-        acquisitionType = AcquisitionType.CDN_WITH_FORVO
-        if(self.radiobtnForvo.isChecked()):
-            acquisitionType = AcquisitionType.ONLY_FORVO
 
-
-
-        self.audioGenerator = AnkiForvoAudioGenerator(AnkiAudioTargets, self.cards, clearOption, acquisitionType)
+        #new thread to scrape audios with
+        self.audioGenerator = AnkiForvoAudioGenerator(AnkiAudioTargets, self.cards, clearOption, self.checkBoxOpenRussian.isChecked())
         self.audioGenerator.countChanged.connect(self.onProgressChanged)
-        self.audioGenerator.limit.connect(self.onForvoLimitReached)
         self.audioGenerator.finished.connect(self.finishTheScraping)
         self.audioGenerator.start()
-        # Turn the start button into a cancel button
 
     def cancelTheScraping(self, event):
-        #TODO: button text change does not happen because the parent method isn't done yet, either do this in another thread or see a QT background solution (Like Javafx's RunLater())
         self.pushButtonStart.setText("Cancelling...")
         self.pushButtonStart.setEnabled(False)
         while(self.audioGenerator.isRunning()):
@@ -314,7 +370,6 @@ class AutoForvoTts(QDialog):
         self.finishTheScraping()
         
     def finishTheScraping(self):
-        AnkiAudioGlobals.forvoRequests = 0 
         self.progressBarAudio.setValue(0)
         self.labelProgrssbarDialog.setText("Done")
         self.pushButtonStart.clicked.disconnect(self.cancelTheScraping)
@@ -322,10 +377,6 @@ class AutoForvoTts(QDialog):
         self.pushButtonStart.clicked.connect(self.startTheScraping)
         self.changeMutableState(True)
         self.pushButtonStart.setEnabled(True)
-
-    def onForvoLimitReached(self, value):
-        self.finishTheScraping()
-        self.labelProgrssbarDialog.setText("Maximum Forvo Downloads reached! "+"("+ str(value) + ")." + " Wait a bit before downloading again.")
 
     def checkAll(self, state):
         # No need to eval whether the state is checked or unchecked
@@ -338,9 +389,10 @@ class AutoForvoTts(QDialog):
         self.scrollAreaFields.setEnabled(state)
         self.checkBoxAllCheckBoxes.setEnabled(state)
         self.checkBoxClearPreviousInput.setEnabled(state)
+        self.checkBoxOpenRussian.setEnabled(state)
         if(self.checkBoxClearPreviousInput.isChecked()):
             self.clearOptionsContainerWidget.setEnabled(state)
-        self.ScrapingOptionsContainerWidget.setEnabled(state)
+
     def onProgressChanged(self, value):
         self.progressBarAudio.setValue(value)
         self.labelProgrssbarDialog.setText("Added Audio to card: " + str(value) + "/" + str(len(self.cards)))

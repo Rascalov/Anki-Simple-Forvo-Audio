@@ -1,41 +1,69 @@
-from .bs4Scraper import forga_lookup, lookup_word
+from .AnkiAudioTools import configBool
+from .bs4Scraper import forga_lookup, lookup_word_lingua_libre
+from .normalize import clean, normalize
+from .openrussian import openrussian_lookup
 
-'''
-ovrofCDN is the Content Delivery Network I use to lighten the load on forvo.
-I will first find the words on this CDN, if they exists, we can get their download paths.
-If they don't, but they do in forvo, I'll send a request to have them added at a later date and the user will use forvo to get the audio. 
-Current cdn is highly unreliable in terms of speed and availability. Lookup is done through a European hosted Heroku app with NoSQL.
-Updating the cdn's audios has also become pretty tedious
-'''
+"""
+Audio acquisition.
 
-def getWordsFromCdnWithForvoBackup(word, language, automatic):
-    return getWordFromCDN(word, language, automatic)
+The forga CDN is the only real source. It matches exactly, so everything asked
+of it goes through `normalize` first: Russian stress marks off, French accents
+kept, glosses and edge punctuation gone.
 
-        
-def getWordFromCDN(word, language, automatic=False):
-    wordList = []
-    wordList.extend(forga_lookup(word, language, automatic))
+When the CDN has nothing we fall back to external sources (lingua libre for any
+language, openrussian for Russian), but only with "Use fallback sources" on.
 
-    print("CDN: Looking for " + word)
-    # if(automatic):
-    #     wordList = find_word_with_highest_vote(word, language)
-    # else:
-    #     wordList = find_word(word, language)
-    if(len(wordList) == 0): #not found in CDN? look it up on forvo
-        print("CDN: Not found on CDN. Using Forvo...")
-        wordList = lookup_word(word, language, automatic)
-        
-        if(len(wordList) == 0 and word.__contains__(" ")):
-            wordList = getWordsFromCDN(word, language)
+Openrussian always answers for Russian (synthesising audio where no recording
+exists), so it sits at the very end of the chain. The manual search dialog
+presents it only when nothing else matched, and the automated deck run leaves
+it out unless the "Use openrussian for automated audio insertion" config
+option is turned on.
 
-    return wordList
+Splitting a phrase into words is not done here; `resolver` owns that decision.
+"""
 
 
-def getWordsFromCDN(words, language):
-    wordList = []
-    print("CDN: " + words + " not found. Looking up its seperate word...")
-    for word in words.split(" "):
-        sentenceWord = getWordFromCDN(word, language, True)
-        if(len(sentenceWord) != 0): 
-            wordList.append(sentenceWord[0])
-    return wordList
+def cdn_lookup(value, language):
+    """The primary source. `language` is 'Name_code', e.g. 'English_en'."""
+    return forga_lookup(value, language)
+
+
+def fallback_lookup(value, language):
+    """External sources, used only once the CDN has come up empty.
+
+    Lingua libre first, openrussian last for Russian: openrussian generates
+    audio for anything, so it must never shadow a real recording.
+    """
+    if not configBool("Use fallback sources"):
+        return []
+    languageCode = language.split("_")[-1]
+    results = lookup_word_lingua_libre(value, languageCode)
+    if not results and languageCode == "ru":
+        results = openrussian_lookup(value, language)
+    return results
+
+
+def automated_fallback_lookup(value, language):
+    """The fallback chain for the automated deck run.
+
+    Lingua libre only: openrussian is opt-in for the automated run, enabled by
+    the dialog's checkbox and fed to the resolver as a gap filler, so it covers
+    what the CDN missed instead of waiting for the whole field to come up
+    empty.
+    """
+    if not configBool("Use fallback sources"):
+        return []
+    return lookup_word_lingua_libre(value, language.split("_")[-1])
+
+
+def getAudioSources(word, language):
+    """Look up a single phrase, CDN first then fallbacks.
+
+    This is the manual search path (the editor dialog), where the user typed or
+    selected exactly what they want and every result is worth showing.
+    """
+    value = clean(normalize(word, language)) or word.strip()
+    results = cdn_lookup(value, language)
+    if results:
+        return results
+    return fallback_lookup(value, language)

@@ -12,6 +12,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+vendor
 .Python
 build/
 develop-eggs/
@@ -175,6 +176,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+# VsCode
+.vscode
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
