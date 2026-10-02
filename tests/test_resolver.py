@@ -150,5 +150,106 @@ class TestCachedLookup(unittest.TestCase):
         self.assertEqual(CachedLookup(boom)("не", RU), [])
 
 
+class FakeGap:
+    """A gap filler holding exactly the phrases it was given."""
+
+    def __init__(self, *phrases):
+        self.phrases = {phrase.lower(): phrase for phrase in phrases}
+        self.asked = []
+
+    def __call__(self, value, language):
+        self.asked.append(value)
+        if value.lower() in self.phrases:
+            return [FakeAudio(value, 900)]
+        return []
+
+
+class TestGapFiller(unittest.TestCase):
+    def test_a_two_word_headword_is_still_stitched(self):
+        # With the filler enabled a two-word headword keeps the word-by-word
+        # treatment: the missing word comes from openrussian in place.
+        cdn = FakeCDN("местная")
+        gap = FakeGap("газета")
+        result = resolve("местная газета", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["местная", "газета"])
+        self.assertEqual(gap.asked, ["газета"])
+
+    def test_a_two_word_headword_found_nowhere_is_taken_whole(self):
+        cdn = FakeCDN()
+        gap = FakeGap("местная газета")
+        result = resolve("местная газета", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["местная газета"])
+        self.assertEqual(gap.asked, ["местная газета"])
+
+    def test_a_three_word_headword_missed_whole_is_taken_from_the_filler(self):
+        # Past two words there is no stitching: the whole phrase comes from
+        # openrussian and the CDN is not asked about its words.
+        cdn = FakeCDN("Девушка")
+        gap = FakeGap("Девушка читавшая книгу")
+        result = resolve("Девушка читавшая книгу", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["Девушка читавшая книгу"])
+        self.assertEqual(cdn.asked, ["Девушка читавшая книгу"])
+
+    def test_nothing_found_takes_the_segment_whole(self):
+        cdn = FakeCDN()
+        gap = FakeGap("не за что")
+        result = resolve("не за что", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["не за что"])
+        self.assertEqual(gap.asked, ["не за что"])
+
+    def test_a_single_missing_word_is_filled(self):
+        cdn = FakeCDN()
+        gap = FakeGap("пенсионерка")
+        result = resolve("пенсионерка", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["пенсионерка"])
+
+    def test_an_extra_line_not_found_is_taken_whole(self):
+        cdn = FakeCDN("Некогда")
+        gap = FakeGap("Спасибо")
+        result = resolve("Некогда<br>Спасибо", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["Некогда", "Спасибо"])
+        self.assertEqual(gap.asked, ["Спасибо"])
+
+    def test_a_long_headword_missed_entirely_is_taken_whole(self):
+        cdn = FakeCDN()
+        gap = FakeGap("Без труда не выловишь и рыбку из пруда")
+        result = resolve("Без труда не выловишь и рыбку из пруда", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["Без труда не выловишь и рыбку из пруда"])
+
+    def test_full_coverage_never_consults_the_gap_filler(self):
+        cdn = FakeCDN("не за что", "за")
+        gap = FakeGap("за")
+        result = resolve("не за что", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["не за что"])
+        self.assertEqual(gap.asked, [])
+
+    def test_gap_filler_is_memoised_within_a_note(self):
+        cdn = FakeCDN()
+        gap = FakeGap("слово")
+        resolve("слово<br>слово", RU, cdn, gap_filler=gap)
+        self.assertEqual(gap.asked, ["слово"])
+
+    def test_gap_filler_is_skipped_when_absent(self):
+        # Without the filler, the old word-by-word stitching still applies.
+        cdn = FakeCDN("местная")
+        result = resolve("местная газета", RU, cdn)
+        self.assertEqual(chosen(result), ["местная"])
+
+    def test_a_headword_with_punctuation_is_taken_whole_from_the_filler(self):
+        # Three words, so the fragment rule does not apply: the whole phrase
+        # comes from openrussian, comma and all.
+        cdn = FakeCDN("Девушка")
+        gap = FakeGap("Девушка, читавшая книгу")
+        result = resolve("Девушка, читавшая книгу", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["Девушка, читавшая книгу"])
+        self.assertEqual(gap.asked, ["Девушка, читавшая книгу"])
+
+    def test_filler_segments_play_in_reading_order(self):
+        cdn = FakeCDN("Девушка")
+        gap = FakeGap("Девушка, читавшая книгу", "Спасибо")
+        result = resolve("Девушка, читавшая книгу<br>Спасибо", RU, cdn, gap_filler=gap)
+        self.assertEqual(chosen(result), ["Девушка, читавшая книгу", "Спасибо"])
+
+
 if __name__ == "__main__":
     unittest.main()

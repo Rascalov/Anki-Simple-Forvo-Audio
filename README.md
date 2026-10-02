@@ -103,6 +103,21 @@ When the CDN has no result, the addon falls back to external sources
 (lingua libre, and openrussian for Russian) if the `Use fallback sources`
 config option is enabled. Direct scraping of forvo.com is no longer supported.
 
+### OpenRussian (Russian only)
+For Russian words neither the CDN nor lingua libre has, the addon falls back
+to [openrussian](https://en.openrussian.org), which generates audio for any
+word. In the manual search dialog it is only ever offered when no other source
+matched. In the automated deck run (`Tools > Add Forvo TTS to deck`) it is
+controlled by the **"Use OpenRussian for missing audio"** checkbox (off by
+default): when ticked, a two-word phrase the CDN does not have whole may
+still be stitched from its words (the missing one filled in from
+openrussian), while anything longer is taken from openrussian as one piece —
+a sentence is never built out of single words.
+
+The source needs a logged-in session: set your `openrussianUsername` and
+`openrussianPassword` in the config (or paste an `openrussianSession` cookie
+value) and the addon logs in for you.
+
 ## Running the tests
 
 The text handling and the lookup policy are pure, so they run without Anki:

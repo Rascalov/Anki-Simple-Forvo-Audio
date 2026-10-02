@@ -158,7 +158,17 @@ def clean(text):
 
 
 def tokenize(text):
-    return [token for token in text.split() if token.strip(EDGE_PUNCTUATION)]
+    """Split on whitespace, dropping punctuation from each token's edges.
+
+    'Девушка, читавшая' -> ['Девушка', 'читавшая']. Keeping the comma would
+    make the token never match the same word without one, so the CDN would be
+    asked twice for one word.
+    """
+    return [
+        token.strip(EDGE_PUNCTUATION)
+        for token in text.split()
+        if token.strip(EDGE_PUNCTUATION)
+    ]
 
 
 def segment_field(field, language):

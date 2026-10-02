@@ -18,6 +18,11 @@ The policy, in order of preference:
 Nothing is capped: a field gets audio for every part of it the CDN has. A note
 carrying a conjugation table therefore collects one recording per form.
 
+An opt-in `gap_filler` narrows rule 2: when it is set, only a two-word
+segment the CDN does not have whole may still be stitched from its words,
+with the missing one filled in from the filler. Anything longer is taken
+from it as one piece. It is never asked about anything the CDN delivered.
+
 The lookup function is injected, so this module needs neither aqt nor network.
 """
 
@@ -74,63 +79,118 @@ def resolve(
     lookup,
     cover_max_tokens=DEFAULT_COVER_MAX_TOKENS,
     fallback=None,
+    gap_filler=None,
 ):
-    """Pick audio for one field. `lookup(value, language)` returns a list."""
+    """Pick audio for one field. `lookup(value, language)` returns a list.
+
+    `gap_filler` is an opt-in source that covers what the primary source
+    missed: a two-word segment not on the CDN whole may still be stitched
+    from its words (the missing one filled in from the filler), and any
+    longer segment is taken from it as one piece. It is never consulted for
+    anything the primary source delivered.
+    """
     resolution = Resolution()
     seen = set()
     memo = {}
+    gap_memo = {}
 
     def ask(value):
-        """One lookup, memoised within this note so retries are free."""
+        """One primary-source lookup, memoised within this note so retries are free."""
         key = value.lower()
         if key not in memo:
             memo[key] = lookup(value, language)
         return memo[key]
 
-    def take(results, phrase):
+    def fill(value):
+        """One gap-filler lookup, memoised so a repeated missing word asks once."""
+        key = value.lower()
+        if key not in gap_memo:
+            gap_memo[key] = gap_filler(value, language)
+        return gap_memo[key]
+
+    def take_piece(results, phrase):
+        """The first recording of `results` not already taken, or None."""
         for audio in results:
             key = getattr(audio, "id", None) or getattr(audio, "link", None)
             if key in seen:
                 continue
             seen.add(key)
-            resolution.add(audio, phrase)
-            return True
-        return False
+            return audio
+        return None
 
     segments = segment_field(field, language)
     for segment in segments:
-        if take(ask(segment.text), segment.text):
-            continue
+        # (token offset, audio, phrase) pieces of this segment, kept in reading
+        # order so the audios play left to right regardless of which source
+        # delivered them.
+        pieces = []
 
-        # Only a headword earns the word-by-word treatment.
-        tokens = segment.tokens
-        if segment.role != HEADWORD or not 1 < len(tokens) <= cover_max_tokens:
-            continue
-        for phrase in _cover(tokens, ask):
-            take(ask(phrase), phrase)
+        whole = take_piece(ask(segment.text), segment.text)
+        if whole is not None:
+            pieces.append((0, whole, segment.text))
+        else:
+            tokens = segment.tokens
+            if gap_filler is not None:
+                # With the filler enabled only a two-word segment is still
+                # stitched from its words; anything longer is taken from the
+                # filler as one piece instead of being built out of single
+                # speakers.
+                fragment = len(tokens) == 2
+            else:
+                fragment = (
+                    segment.role == HEADWORD and 1 < len(tokens) <= cover_max_tokens
+                )
+            if fragment:
+                covered = set()
+                start = 0
+                while start < len(tokens):
+                    for length in range(len(tokens) - start, 0, -1):
+                        candidate = clean(" ".join(tokens[start:start + length]))
+                        results = ask(candidate) if candidate else []
+                        if results:
+                            audio = take_piece(results, candidate)
+                            if audio is not None:
+                                pieces.append((start, audio, candidate))
+                            covered.update(range(start, start + length))
+                            start += length
+                            break
+                    else:
+                        # Nothing starting here exists; drop the token.
+                        start += 1
+
+                if gap_filler is not None:
+                    if covered:
+                        # Some words were found: the filler adds the rest,
+                        # each at its own position in the phrase.
+                        for i, token in enumerate(tokens):
+                            if i in covered:
+                                continue
+                            audio = take_piece(fill(token), token)
+                            if audio is not None:
+                                pieces.append((i, audio, token))
+                    else:
+                        # Neither word was found: take the pair whole from
+                        # the filler instead of two openrussian words.
+                        audio = take_piece(fill(segment.text), segment.text)
+                        if audio is not None:
+                            pieces.append((0, audio, segment.text))
+            elif gap_filler is not None:
+                audio = take_piece(fill(segment.text), segment.text)
+                if audio is not None:
+                    pieces.append((0, audio, segment.text))
+
+        for _, audio, phrase in sorted(pieces, key=lambda piece: piece[0]):
+            resolution.add(audio, phrase)
 
     if not resolution.audios and fallback is not None and segments:
-        # Only the headword, and only once the CDN has given up: the fallbacks
-        # scrape web pages and a deck run must not turn into a crawl.
+        # Only the headword, and only once nothing at all was found: the
+        # fallbacks scrape web pages and a deck run must not turn into a crawl.
         try:
-            take(fallback(segments[0].text, language), segments[0].text)
+            audio = take_piece(fallback(segments[0].text, language), segments[0].text)
+            if audio is not None:
+                resolution.add(audio, segments[0].text)
         except Exception as err:
             print(f"Fallback failed for {segments[0].text!r}: {err}")
 
     resolution.lookups = len(memo)
     return resolution
-
-
-def _cover(tokens, ask):
-    """Longest-first cover of a token run. Yields the phrases that exist."""
-    start = 0
-    while start < len(tokens):
-        for length in range(len(tokens) - start, 0, -1):
-            candidate = clean(" ".join(tokens[start:start + length]))
-            if candidate and ask(candidate):
-                yield candidate
-                start += length
-                break
-        else:
-            # Nothing starting here exists; drop the token and move on.
-            start += 1

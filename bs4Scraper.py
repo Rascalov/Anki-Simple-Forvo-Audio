@@ -11,7 +11,9 @@ Audio sources.
 The primary source is the "forga" CDN (AnkiAudioGlobals.FORGA_BASE_URL).
 When the CDN has no results we fall back to external sources:
 - lingua libre (open audio records, any language)
-- openrussian (Russian only)
+
+Openrussian (Russian only) also exists as a last resort, but it lives in its
+own module because it needs a logged-in session; see `openrussian.py`.
 """
 
 
@@ -43,20 +45,6 @@ def lookup_word_lingua_libre(word, languageCode):
                 audioList.append(AnkiAudioObject(word, wordID, linkPage.select_one("source[type^='audio/ogg']")['src']))
             except Exception as e:
                 print(str(e))
-    return audioList
-
-
-def scrape_yandex_tts(word):
-    # Russian only (from en.openrussian.org)
-    audioList = []
-    url = f"https://api.openrussian.org/read/ru/{urllib.parse.quote(word)}"
-    response = requests.get(url, allow_redirects=False)
-    location = response.headers.get("Location")
-    if not location:
-        print(f"OpenRussian: no audio location for '{word}'")
-        return audioList
-    wordID = location.split('/')[-1].split('.mp3')[0]
-    audioList.append(AnkiAudioObject(word, wordID, location))
     return audioList
 
 

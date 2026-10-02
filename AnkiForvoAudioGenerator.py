@@ -7,7 +7,8 @@ from .AnkiAudioTools import (
     getConfig,
     getDefiniteConfigPath,
 )
-from .ovrofCDN import cdn_lookup, fallback_lookup
+from .ovrofCDN import automated_fallback_lookup, cdn_lookup
+from .openrussian import openrussian_lookup
 from .resolver import DEFAULT_COVER_MAX_TOKENS, CachedLookup, resolve
 import re
 
@@ -16,17 +17,20 @@ class AnkiForvoAudioGenerator(QThread):
     finished = pyqtSignal()
     countChanged = pyqtSignal(int)
 
-    def __init__(self, forvoAudioTargets, cards, audioClearOption):
+    def __init__(self, forvoAudioTargets, cards, audioClearOption, useOpenRussian=False):
         super().__init__()
         self.forvoAudioTargets = forvoAudioTargets
         self.cards = cards
         self.audioClearOption = audioClearOption
         config = getConfig()
         self.coverMaxTokens = intOption(config, "coverHeadwordsUpToWords", DEFAULT_COVER_MAX_TOKENS)
-        self.fallback = fallback_lookup if configBool("Use fallback sources") else None
+        self.fallback = automated_fallback_lookup if configBool("Use fallback sources") else None
         # One cache for the whole run: a deck full of Russian asks about 'не'
         # dozens of times and the CDN only needs to answer once.
         self.lookup = CachedLookup(cdn_lookup)
+        # OpenRussian fills whatever the CDN missed, but only when asked for:
+        # it synthesises audio for any Russian text, so it is opt-in per run.
+        self.gapFiller = CachedLookup(openrussian_lookup) if useOpenRussian else None
 
     def run(self):
         count = 0
@@ -59,6 +63,7 @@ class AnkiForvoAudioGenerator(QThread):
                 self.lookup,
                 cover_max_tokens=self.coverMaxTokens,
                 fallback=self.fallback,
+                gap_filler=self.gapFiller,
             )
 
             for audio in resolution.audios:

@@ -1,0 +1,43 @@
+{
+    "type": "object",
+    "properties": {
+        "downloadPath": {
+            "type": "string",
+            "description": "Where downloaded audio files are saved. Leave empty to use Anki's collection.media folder."
+        },
+        "audioFileExtension": {
+            "type": "string",
+            "description": "File extension used for downloaded audio (e.g. mp3)."
+        },
+        "Remember language on a per deck basis": {
+            "type": "string",
+            "description": "Set to 'True' to remember the selected language in the deck description."
+        },
+        "Use fallback sources": {
+            "type": "string",
+            "description": "Set to 'True' to use external sources (lingua libre, openrussian) when the CDN has no result."
+        },
+        "coverHeadwordsUpToWords": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Longest headword that is still covered word by word by the auto-fetch."
+        },
+        "Use openrussian for automated audio insertion": {
+            "type": "string",
+            "default": "False",
+            "description": "Default state of the 'Use OpenRussian for missing audio' checkbox in the auto-fetch dialog. When on, OpenRussian fills in words or sentences the CDN could not find (Russian only)."
+        },
+        "openrussianUsername": {
+            "type": "string",
+            "description": "OpenRussian account email used to obtain a session when no session is configured."
+        },
+        "openrussianPassword": {
+            "type": "string",
+            "description": "Password for the OpenRussian account."
+        },
+        "openrussianSession": {
+            "type": "string",
+            "description": "Optional OpenRussian session cookie value. When empty, the add-on logs in with the configured credentials."
+        }
+    }
+}

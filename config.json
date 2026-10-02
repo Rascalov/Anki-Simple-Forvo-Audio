@@ -3,5 +3,9 @@
     "audioFileExtension": "mp3",
     "Remember language on a per deck basis": "False",
     "Use fallback sources": "True",
-    "coverHeadwordsUpToWords": 6
+    "coverHeadwordsUpToWords": 6,
+    "Use openrussian for automated audio insertion": "False",
+    "openrussianUsername": "",
+    "openrussianPassword": "",
+    "openrussianSession": ""
 }

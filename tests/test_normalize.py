@@ -11,6 +11,7 @@ from forvo_addon.normalize import (
     segment_field,
     strip_stress_marks,
     to_lines,
+    tokenize,
 )
 
 RU = "Russian_ru"
@@ -172,6 +173,20 @@ class TestSegmentField(unittest.TestCase):
     def test_empty_field(self):
         self.assertEqual(segment_field("", RU), [])
         self.assertEqual(segment_field("<div><br></div>", RU), [])
+
+
+class TestTokenize(unittest.TestCase):
+    def test_edge_punctuation_is_stripped_from_tokens(self):
+        # Regression: the comma made 'Девушка,' a token that could never match
+        # the CDN's 'Девушка', so the gap filler produced a duplicate.
+        self.assertEqual(tokenize("Девушка, читавшая книгу"), ["Девушка", "читавшая", "книгу"])
+
+    def test_inner_punctuation_is_kept(self):
+        self.assertEqual(tokenize("говорить по-русски"), ["говорить", "по-русски"])
+        self.assertEqual(tokenize("c'est ça"), ["c'est", "ça"])
+
+    def test_pure_punctuation_tokens_are_dropped(self):
+        self.assertEqual(tokenize("Спасибо — всем"), ["Спасибо", "всем"])
 
 
 if __name__ == "__main__":

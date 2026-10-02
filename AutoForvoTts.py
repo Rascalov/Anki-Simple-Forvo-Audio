@@ -2,7 +2,7 @@ from aqt.qt import *
 from aqt import mw
 from aqt.utils import showInfo
 from .AnkiForvoAudioGenerator import AnkiForvoAudioGenerator
-from .AnkiAudioTools import AnkiAudioTarget, AudioClearingOptions, languages
+from .AnkiAudioTools import AnkiAudioTarget, AudioClearingOptions, configBool, languages
 
 # TODO: To anyone even remotely familiar with QT, this probably looks horrendous. Revamp encouraged.
 
@@ -183,15 +183,21 @@ class AutoForvoTts(QDialog):
         self.lblSelectFields = QLabel(Dialog)
         self.lblSelectFields.setGeometry(QRect(100, 70, 261, 16))
         self.lblSelectFields.setObjectName("lblSelectFields")
+        #optional checkbox: fill in audio the CDN could not find with openrussian
+        self.checkBoxOpenRussian = QCheckBox(Dialog)
+        self.checkBoxOpenRussian.setGeometry(QRect(22, 250, 300, 21))
+        self.checkBoxOpenRussian.setChecked(configBool("Use openrussian for automated audio insertion"))
+        self.checkBoxOpenRussian.setObjectName("checkBoxOpenRussian")
+
         #optional checkbox clear previous input
         self.checkBoxClearPreviousInput = QCheckBox(Dialog)
-        self.checkBoxClearPreviousInput.setGeometry(QRect(22, 250, 241, 21))
+        self.checkBoxClearPreviousInput.setGeometry(QRect(22, 272, 241, 21))
         self.checkBoxClearPreviousInput.setChecked(False)
         self.checkBoxClearPreviousInput.setObjectName("checkBoxClearPreviousInput")
 
         #additional Radio button options for clearing previous audio
         self.clearOptionsContainerWidget = QWidget(Dialog)
-        self.clearOptionsContainerWidget.setGeometry(QRect(32, 270, 441, 34))
+        self.clearOptionsContainerWidget.setGeometry(QRect(32, 292, 441, 34))
         self.clearOptionsContainerLayout = QHBoxLayout(self.clearOptionsContainerWidget)
         self.clearOptionsContainerLayout.setSpacing(6)
         self.radiobtnClearAllText = QRadioButton()
@@ -296,6 +302,8 @@ class AutoForvoTts(QDialog):
         self.lblSelectFields.setText(_translate("Dialog", "Select which field(s) and their language:"))
         self.checkBoxClearPreviousInput.setToolTip(_translate("Dialog", "Clear the audio field before adding the new tts to the audio field"))
         self.checkBoxClearPreviousInput.setText(_translate("Dialog", "Clear Previous Audio Field Input (?*)"))
+        self.checkBoxOpenRussian.setToolTip(_translate("Dialog", "When the CDN has no recording for a word or sentence, generate the missing audio with OpenRussian (Russian only)"))
+        self.checkBoxOpenRussian.setText(_translate("Dialog", "Use OpenRussian for missing audio (Russian only)"))
         self.lblScrollField.setText(_translate("Dialog", "Field:"))
         self.lblScrollLanguage.setText(_translate("Dialog", "Language:"))
         self.lblTargetField.setText(_translate("Dialog", "Audio Field:"))
@@ -349,7 +357,7 @@ class AutoForvoTts(QDialog):
                 clearOption = AudioClearingOptions.AUDIO_CLEAR
 
         #new thread to scrape audios with
-        self.audioGenerator = AnkiForvoAudioGenerator(AnkiAudioTargets, self.cards, clearOption)
+        self.audioGenerator = AnkiForvoAudioGenerator(AnkiAudioTargets, self.cards, clearOption, self.checkBoxOpenRussian.isChecked())
         self.audioGenerator.countChanged.connect(self.onProgressChanged)
         self.audioGenerator.finished.connect(self.finishTheScraping)
         self.audioGenerator.start()
@@ -381,6 +389,7 @@ class AutoForvoTts(QDialog):
         self.scrollAreaFields.setEnabled(state)
         self.checkBoxAllCheckBoxes.setEnabled(state)
         self.checkBoxClearPreviousInput.setEnabled(state)
+        self.checkBoxOpenRussian.setEnabled(state)
         if(self.checkBoxClearPreviousInput.isChecked()):
             self.clearOptionsContainerWidget.setEnabled(state)
 
