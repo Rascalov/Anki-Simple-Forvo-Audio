@@ -27,12 +27,13 @@ jobs:
 
       # The dialog tests stub out Anki but still need real Qt, and they skip
       # themselves silently if it is missing. libegl1 is what the offscreen
-      # platform plugin links against on a headless runner.
-      - name: Install Qt for the dialog tests
+      # platform plugin links against on a headless runner. bs4 and requests
+      # are imported at module load by the sources the deck-run tests use.
+      - name: Install test dependencies
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq libegl1 libxkbcommon-x11-0
-          pip install PyQt6
+          pip install PyQt6 bs4 requests
 
       - name: Run tests
         working-directory: tests
